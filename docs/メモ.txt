@@ -6,7 +6,32 @@
 　そのようにして送られてきた情報からファイルパスを取り出せるのであれば
 　ファイルパスをデータベースに格納する形としたい
 
-・
+　画像の取り扱いについてよくわからなくなってきた。
+　CDNにアップロードするのはフロントから？
+　販売管理システムからspringbootに渡して、
+　springbootからCDNに渡せばよい？
+　CDNに渡すメソッド内でデータベースにはURLを保存する。
+
+　つまり、フロント → springboot → cloudflare R2 で画像をアップロード
+　それと同時にspringboot → データベース で画像のURL(ファイル名？)を保存
+　データベース → springboot → フロント で画像URLを渡し、
+　フロント側で <img src=画像URL> とすれば、表示できるはず。
+
+・フロントからspringbootにファイルを送信できるかやってみる
+　cloudflareでR2をつくる
+　springbootからcloudflareにアップロードできるかやってみる
+
+　productsテーブルの内容でProductエンティティクラスを作成
+　フォーム内容からProductCreateDtoクラスを作成
+　(@RequestBody ProductCreateDto dto) でフォーム情報をdtoに結び付ける
+　メソッド内でdtoに想定した内容、そして画像ファイルがちゃんと含まれているか確認する
+
+public void createProduct(@ModelAttribute ProductCreateDto dto) {
+        System.out.println(dto.getImage());
+    }
+でnullと表示されている原因を調べるところから
+ファイルはDtoクラスのメンバじゃなくて@RequestPart MultipartFile file
+でDtoとは別に受け取らなければならないのだろうか？
 
 ECサイトおよび販売管理システム
 ECサイトのページ
@@ -24,7 +49,7 @@ ECサイトのページ
     チャージ完了画面
 
 テーブル
-    商品(id, name, genre, price, total_purchased, release_date, delivery_time)
+    商品(id, name, genre, price, total_purchased, release_date, delivery_time, image_url)
     ユーザ(id, name, password, balance)
     注文(ユーザID, 商品ID, order_date) 多対多
 
@@ -51,3 +76,8 @@ ECサイトのページ
 
 マークダウンのテーブル便利な拡張機能
 https://qiita.com/tawara_/items/5d59cf725e7c7aa72f0f
+
+springbootでは multipart/form-data で送信されたそれぞれの情報を
+@RequestPart("名前")で取得することができる。
+https://b1san-blog.com/post/spring/spring-file/
+
