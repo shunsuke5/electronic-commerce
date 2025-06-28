@@ -10,15 +10,15 @@
 <body>
     <form action="http://localhost:8080/product/create" method="post" enctype="multipart/form-data">
         <label for="name">商品名：</label>
-        <input type="text" id="name">
+        <input type="text" id="name" name="name">
         <label for="genre">ジャンル：</label>
-        <input type="text" id="genre">
+        <input type="text" id="genre" name="genre">
         <label for="price">値段：</label>
-        <input type="number" id="price">
+        <input type="number" id="price" name="price">
         <label for="delivery-time">配達日数：</label>
-        <input type="number" id="delivery-time">
-        <label>商品画像ファイル</label>
-        <input type="file">
+        <input type="number" id="deliveryTime" name="deliveryTime">
+        <label for="image-file">商品画像ファイル</label>
+        <input type="file" id="image" name="image">
         <input type="submit">
     </form>
 </body>
