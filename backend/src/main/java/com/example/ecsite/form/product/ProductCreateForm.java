@@ -14,5 +14,4 @@ public class ProductCreateForm {
     private String genre;
     private int price;
     private int deliveryTime;
-    private MultipartFile image;
 }
