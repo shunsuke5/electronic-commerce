@@ -17,21 +17,20 @@
 　データベース → springboot → フロント で画像URLを渡し、
 　フロント側で <img src=画像URL> とすれば、表示できるはず。
 
-・フロントからspringbootにファイルを送信できるかやってみる
-　cloudflareでR2をつくる
+・cloudflareでR2をつくる
 　springbootからcloudflareにアップロードできるかやってみる
 
-　productsテーブルの内容でProductエンティティクラスを作成
-　フォーム内容からProductCreateDtoクラスを作成
-　(@RequestBody ProductCreateDto dto) でフォーム情報をdtoに結び付ける
-　メソッド内でdtoに想定した内容、そして画像ファイルがちゃんと含まれているか確認する
+　springbootからアクセスするコードは以下参照
+　https://developers.cloudflare.com/r2/examples/aws/aws-sdk-java/
 
-public void createProduct(@ModelAttribute ProductCreateDto dto) {
-        System.out.println(dto.getImage());
-    }
-でnullと表示されている原因を調べるところから
-ファイルはDtoクラスのメンバじゃなくて@RequestPart MultipartFile file
-でDtoとは別に受け取らなければならないのだろうか？
+　コントローラはR2Clientをフィールドとして持ちたい
+　R2周りのコーディングは完了したので、何か適当に1つファイルをバケットに入れ、
+　コントローラー内でr2Clientを用いてバケットからファイルを引っ張ってこれるか
+　確認するところから
+
+　R2からファイル情報を取得することができた。
+　次はspringにフォームから送られてきたファイルを
+　R2にアップロードする処理を実装するところから
 
 ECサイトおよび販売管理システム
 ECサイトのページ
@@ -81,3 +80,15 @@ springbootでは multipart/form-data で送信されたそれぞれの情報を
 @RequestPart("名前")で取得することができる。
 https://b1san-blog.com/post/spring/spring-file/
 
+aws-java-sdkをそのまま依存関係に追加すると、
+ライブラリ全体をインクルードするため、かなりの量の不要なファイルも
+取り込むことになってしまう。
+aws-java-sdkは1.9.0以降、機能ごとにライブラリを取り込みできるため
+そのようにした方が良い。
+https://qiita.com/s-katsumata/items/34a326f1d802add10119
+
+@ConfigurationPropertyがつけられたクラスをSpringDIに認識させる3つの方法
+@EnableConfigurationPropertiesは記述が簡単だが、
+@Beanで管理すると、@Beanメソッドを定義する際にprefixを上書きすることができ、
+「同じ構造の異なるprefixを持つプロパティ」を1つのクラスで読み込むことができる。
+https://qiita.com/cfg17771855/items/905da3100ae99c5197f0
