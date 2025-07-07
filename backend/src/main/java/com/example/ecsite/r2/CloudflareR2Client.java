@@ -2,6 +2,7 @@ package com.example.ecsite.r2;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -12,9 +13,14 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class CloudflareR2Client {
     private final S3Client s3Client;
+    private final String BUCKET_NAME;
+
+    public CloudflareR2Client(S3Client s3Client, String bucketName) {
+        this.s3Client = s3Client;
+        this.BUCKET_NAME = bucketName;
+    }
 
     public List<Bucket> listBuckets() {
         try {
@@ -24,22 +30,22 @@ public class CloudflareR2Client {
         }
     }
 
-    public List<S3Object> listObjects(String bucketName) {
+    public List<S3Object> listObjects() {
         try {
             ListObjectsV2Request request = ListObjectsV2Request.builder()
-                    .bucket(bucketName)
+                    .bucket(BUCKET_NAME)
                     .build();
 
             return s3Client.listObjectsV2(request).contents();
         } catch (S3Exception e) {
-            throw new RuntimeException("Failed to list objects in bucket " + bucketName + ": " + e.getMessage(), e);
+            throw new RuntimeException("Failed to list objects in bucket " + BUCKET_NAME + ": " + e.getMessage(), e);
         }
     }
 
-    public void putObject(String bucketName, MultipartFile file) {
+    public void putObject(MultipartFile file) {
         PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(file.getName())
+                .bucket(BUCKET_NAME)
+                .key(file.getOriginalFilename())
                 .contentType(file.getContentType())
                 .build();
         try {
