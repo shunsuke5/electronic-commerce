@@ -11,19 +11,68 @@
 　https://developers.cloudflare.com/r2/examples/aws/aws-sdk-java/
 
 　flywayを導入してproductsテーブルを作成するSQLファイルを実装するところから
-　以下参照してputBacket()なりでR2にアップロードできるかやってみる
-　https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
+　R2から画像ファイルそのものをダウンロードする処理を実装する
+　URLに
+
+　R2はプレフィックスで階層を表現できるため、商品のジャンルごとに
+　バケットを分ける必要はなく、階層で表現すればよい。
+　そうすれば、データベースからgenreを取得してその文字列をそのまま
+　取得したい階層に指定することができる。
+
+　なぜか「S3Exception: The request signature we calculated
+　does not match the signature you provided. Check your
+　secret access key and signing method.
+　(Service: S3, Status Code: 403, Request ID: null)
+　(SDK Attempt Count: 1)」のエラーが出るようになってしまった。なぜ？
+　listObjects()メソッドは実行できるし、"ecsite"で指定する形でも
+　putObject()は変わらずエラーになるので、BUCKET_NAMEが変なことになっている
+　わけではなさそう。じゃあなぜ？何がよくない？わからん
+
+　パブリックに公開するように設定した関係で権限がないとかなのだろうか？
+　一旦公開をやめてみる
+　予想通り、パブリック公開をやめたら今までのようにできるようになった。
+　なぜパブリックに公開するとputObject()が行えなくなる？
+　権限が必要なのであれば、どうやって権限を付与すればよいのか？
+　expectedBucketOwner()でも使うのだろうか？
+　それとも公開した場合は、ACLを指定しないとダメなのだろうか？
+　じゃないと全ユーザが触れる気がするし。
+
+　また再現しようと同じコードでもう一度やってみたら
+　なんか何もしてないのにできるようになった。怖い。
+　と思ったらまたなった。更に怖い。
+　なんか画像によってエラーが出るかどうかが変わる。
+　もしかして_がファイル名に入ってるとエラーが出る？
+　「キーに特殊文字を使用する場合はURLエンコードが必要です」みたいなことを
+　r2 オブジェクト キー名 で検索したらgoogleのAIが言っている。
+
+　_ を無くしてみたが、エラーになるファイルは変わらずエラーのままである。
+　Windowsのフォルダの違いか？
+　いや、同じフォルダ内でも送れるのと送れないのがあるためそれも違う。
+　何で？？？？？ある程度サイズが大きいとエラーが出る気がする。
+　もしかしてバイトに変換してるところで内容が大きいと不具合でも生じるのか？
+　エラーメッセージで調べてみると、シークレットキーやらアクセスキーに
+　特殊文字が含まれているとOSがそれを変に扱ってそのエラーになるみたいな
+　ことしかなかったが、自分のアクセスキーとシークレットキーに特殊文字はない。
+　だが、一旦キーを再生成してみるのが良いかもしれない。
+
+　ちなみにR2のputObject()はexpectedBucketOwner()もACLも
+　実装してないらしい。expectedBucketOwner()を使ってみたら
+　not implement のエラーが出た。
+
+　なんか全く同じ状況の人がawssdkのバージョンをダウングレードしたら
+　解決できたと記載があったので、試しに同じバージョンにダウングレードしたら
+　本当に解決した。一体何なんだろう。
+　S3だけダウングレードすると ep is null みたいなエラーが出たので、
+　auth,regionsの2つも同じ2.26.21にダウングレードすることで解決した。
+　以下サイトの「Downgrading S3 SDK to version “2.26.21” worked fine.」を参考にした。
+　https://community.cloudflare.com/t/the-request-signature-we-calculated-does-not-match-the-signature-you-provided/773465
 
 テーブル
     商品(id, name, genre, price, total_purchased, release_date, delivery_time, image_url)
     ユーザ(id, name, password, balance)
     注文(ユーザID, 商品ID, order_date) 多対多
 
-在庫数が0の場合、売り切れと表示され商品をクリックしても反応が無いこと
-商品画像または商品名エリアをクリックすることで購入ページに遷移すること
-
-データの正規化について理解した上で行えていること
-セッションベースの認証について理解した上でプログラムとして実装できていること
+======================================================================
 
 マークダウンのテーブル便利な拡張機能
 https://qiita.com/tawara_/items/5d59cf725e7c7aa72f0f
@@ -59,3 +108,7 @@ docker compose down は up コマンドと真逆のことをする。
 つまり、up で作られうるもの(イメージ、コンテナ、ボリューム、ネットワーク)を
 すべて削除する。
 https://qiita.com/suin/items/19d65e191b96a0079417
+
+javaで画像ファイルどうかはjavax.imageio.ImageIO#reqd(File)
+メソッドで判定することができる。
+https://blog.ricemountainer.net/posts/2017/453836237/

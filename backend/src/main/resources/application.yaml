@@ -3,12 +3,18 @@ spring:
     name: ecsite
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ecsite?useSSL=false&serverTimezone=Asia/Tokyo&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Tokyo&allowPublicKeyRetrieval=true
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
 
 r2:
   access-key: ${R2_ACCESS_KEY}
   secret-key: ${R2_SECRET_KEY}
   endpoint: ${R2_ENDPOINT}
+  bucket-name: ${R2_BUCKET_NAME}
+  bucket-url: ${R2_BUCKET_URL}
