@@ -12,18 +12,32 @@
 
 　flywayを導入してproductsテーブルを作成するSQLファイルを実装するところから
 　以下参照してputBacket()なりでR2にアップロードできるかやってみる
-　https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
+
+　putObject(PutObjectRequest, RequestBody) を使用する？
+
+　サイトの方はAmazons3クラスのputObject()を使用しているが、
+　自分のコードではS3Clientクラスを使用しているため、
+　公式やQiitaの実装例サイトは参考にできない。
+　PutObjectRequest()ではbuilderを利用して、バケット名やファイルタイプなどを
+　指定すればよいのだろうか？
+　最終的に、バケット名、キー名、コンテンツタイプを指定すると
+　無事アップロードできるようになった。
+
+　MultipartFile.getBytes() → RequestBody.fromBytes() の流れを使えば
+　ファイル内容からRequestBodyは作れるか？
+　MultipartFile.transferTo(File) を使ってもよさそう。
+　やっぱtransferTo()は無理そう。Fileのコンストラクタで必ず
+　存在するファイルを指定しなきゃいけないっぽいから。
+　RequestBody.fromBytes(file.getBytes()) で無事アップロードできた。
+
+https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
 
 テーブル
     商品(id, name, genre, price, total_purchased, release_date, delivery_time, image_url)
     ユーザ(id, name, password, balance)
     注文(ユーザID, 商品ID, order_date) 多対多
 
-在庫数が0の場合、売り切れと表示され商品をクリックしても反応が無いこと
-商品画像または商品名エリアをクリックすることで購入ページに遷移すること
-
-データの正規化について理解した上で行えていること
-セッションベースの認証について理解した上でプログラムとして実装できていること
+======================================================================
 
 マークダウンのテーブル便利な拡張機能
 https://qiita.com/tawara_/items/5d59cf725e7c7aa72f0f
@@ -59,3 +73,7 @@ docker compose down は up コマンドと真逆のことをする。
 つまり、up で作られうるもの(イメージ、コンテナ、ボリューム、ネットワーク)を
 すべて削除する。
 https://qiita.com/suin/items/19d65e191b96a0079417
+
+javaで画像ファイルどうかはjavax.imageio.ImageIO#reqd(File)
+メソッドで判定することができる。
+https://blog.ricemountainer.net/posts/2017/453836237/
