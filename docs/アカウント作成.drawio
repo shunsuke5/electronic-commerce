@@ -1,0 +1,49 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.9 Chrome/134.0.6998.205 Electron/35.4.0 Safari/537.36" version="27.0.9">
+  <diagram name="ページ1" id="fYMkmvhlHXCdwpJVQEw4">
+    <mxGraphModel dx="607" dy="791" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-1" value="&lt;font style=&quot;font-size: 48px;&quot;&gt;アカウント作成&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="440" width="340" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-2" value="ログイン" style="rounded=0;whiteSpace=wrap;html=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="80" y="600" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-3" value="情報入力" style="rounded=0;whiteSpace=wrap;html=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="320" y="600" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-6" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;名前&lt;br&gt;パスワード&lt;br&gt;送信ボタン&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="320" y="690" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-12" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;サインアップリンク&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="680" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-13" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uP0--c8BXl8Z5oXClSFJ-2" target="uP0--c8BXl8Z5oXClSFJ-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="640" y="460" as="sourcePoint" />
+            <mxPoint x="690" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-15" value="アカウント&lt;div&gt;作成完了&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="560" y="600" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-16" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uP0--c8BXl8Z5oXClSFJ-3" target="uP0--c8BXl8Z5oXClSFJ-15">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="620" y="540" as="sourcePoint" />
+            <mxPoint x="670" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-17" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uP0--c8BXl8Z5oXClSFJ-15">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="790" y="660" as="sourcePoint" />
+            <mxPoint x="800" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uP0--c8BXl8Z5oXClSFJ-19" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;ログインへ&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="730" y="600" width="80" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

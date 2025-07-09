@@ -1,4 +1,4 @@
-package com.example.ecsite.entity;
+package com.example.ecsite.data.entity;
 
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
