@@ -1,4 +1,4 @@
-package com.example.ecsite.form.product;
+package com.example.ecsite.data.form.product;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
