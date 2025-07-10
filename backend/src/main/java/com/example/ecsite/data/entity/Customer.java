@@ -7,15 +7,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "products")
+@Table(name = "customers")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Product {
+public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,27 +23,14 @@ public class Product {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
-
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
-    private int price;
+    private String password;
 
-    @Column(name = "total_purchased", nullable = false)
-    private int totalPurchased;
-
-    @Column(name = "release_date", nullable = false)
-    private LocalDate releaseDate;
-
-    @Column(name = "delivery_time", nullable = false)
-    private int deliveryTime;
-
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl;
+    @Column(nullable = false)
+    private int balance;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

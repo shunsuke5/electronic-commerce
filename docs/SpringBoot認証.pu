@@ -1,0 +1,50 @@
+@startuml springboot-jwt
+
+actor 企業 as company
+boundary ログイン画面 as login
+boundary トップページ as top
+control SpringBoot as sb
+database DB
+
+activate company
+company -> top : アクセス
+
+activate top
+top -> sb : /jwt
+
+activate sb
+sb -> sb : トークン検証
+
+sb -> top : 403
+deactivate sb
+
+top -> login : 遷移
+deactivate top
+
+activate login
+company -> login : 認証情報入力
+login -> sb : 認証情報送信
+
+activate sb
+sb -> DB : データ抽出
+
+activate DB
+DB -> sb : 結果送信
+deactivate DB
+
+sb -> sb : 照合成功
+sb -> login : トークン発行
+deactivate sb
+
+login -> top : 遷移
+deactivate login
+
+activate top
+company -> top : アクセス
+
+deactivate company
+deactivate login
+deactivate top
+deactivate sb
+
+@enduml

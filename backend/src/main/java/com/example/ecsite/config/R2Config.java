@@ -40,8 +40,8 @@ public class R2Config {
                 .build();
     }
 
-    @Bean
-    public S3Config s3Config() {
-        return new S3Config();
-    }
+//    @Bean
+//    public S3Config s3Config() {
+//        return new S3Config();
+//    }
 }

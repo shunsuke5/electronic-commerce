@@ -32,6 +32,48 @@
 
 　JWTトークンを用いた認証処理を実装するところから
 
+　フロントのフォームactionにはフロントで遷移したいページを指定するのでは？
+　ページの遷移は全てapiを通す必要があるので、
+　buttonを使用してjavascriptで制御するようにする。
+　javascriptでまず最初にspringbootのトークン確認用のマッピングに
+　リクエストを送信し、持っていればページ遷移ができるし、
+　持っていなければログインページに遷移させるようにする。
+
+https://ik.am/entries/818
+https://spring.pleiades.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
+https://tech-lab.sios.jp/archives/8651
+
+　「クレームセットマッピングの構成」を参考にして
+　企業IDをトークン内に含めることができるかもしれない。
+　NimbusJwtのissuerUriにはどのURIを指定すればいいのか？
+　それはどうやったら調べられるのか？
+
+　OIDCとspringboot認証を併用する場合、
+　どっちを使用しているのか判別する方法は？
+　emailアドレスが一意であることを
+
+　とりあえずSpringBootにJWTを実装する。
+　アルゴリズムはECDSA,ED25519のどちらかを使用するのがよさそう。
+　nimbusにED25519はあるか？ありそう。
+　なんかnimbuse.joseでed25519を使用して参考サイトと同じような
+　クラス作るやり方がわからない。
+　とりあえずSpringSecurityでED25519を使うのはかなり面倒そうなので、
+　ECDSAで実装することにする。
+
+　管理システム用とECサイト用でSecurityFilterを分けたい。
+　つまり、UserDetailsServiceを実装した
+　CompanyDetailsServiceとEcsiteUserDetailsServiceの2つを実装したい。
+　ただ、そんなことできるのか？Bean登録するから
+　場合に応じてどっちのUserDetailsServiceを使い分けるみたいなことを
+　実現する方法がわからない。
+
+　opensslでed25519の鍵ペアを作成
+https://pebble8888.hatenablog.com/entry/2019/04/30/211832
+https://bitbucket.org/connect2id/nimbus-jose-jwt/src/master/src/main/java/com/nimbusds/
+https://docs.oracle.com/javase/jp/22/docs/api/java.base/java/security/interfaces/package-summary.html
+
+　S3Configもレコードにできるのならしたい。
+
 ======================================================================
 
 　商品のジャンルは商品登録の際に選択できるようにしたい。

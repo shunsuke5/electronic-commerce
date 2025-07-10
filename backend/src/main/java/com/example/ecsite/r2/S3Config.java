@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "r2")
 @Getter
-@Setter
+//@Setter
 public class S3Config {
     private String accessKey;
     private String secretKey;
