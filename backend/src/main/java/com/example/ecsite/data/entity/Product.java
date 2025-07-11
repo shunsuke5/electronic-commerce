@@ -21,10 +21,6 @@ public class Product {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
-
-    @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 

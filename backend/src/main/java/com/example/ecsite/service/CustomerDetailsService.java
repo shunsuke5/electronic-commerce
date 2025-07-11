@@ -1,6 +1,5 @@
 package com.example.ecsite.service;
 
-import com.example.ecsite.repository.CompanyRepository;
 import com.example.ecsite.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
