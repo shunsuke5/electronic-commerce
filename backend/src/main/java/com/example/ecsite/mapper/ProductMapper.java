@@ -9,7 +9,6 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface ProductMapper {
 
-    @Mapping(target = "companyId", source = "companyId")
     @Mapping(target = "categoryId", source = "categoryId")
     @Mapping(target = "imageUrl", source = "imageUrl")
     ProductCreateDto toDto(ProductCreateForm form, Long companyId, Long categoryId, String imageUrl);

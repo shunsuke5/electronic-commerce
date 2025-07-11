@@ -1,34 +1,9 @@
 メモ
 
-　ProductControllerに渡されたFormクラスをそのままServiceに渡し、
-　Serviceがエンティティへの変換、R2へのアップロード、
-　URLの加工、データベースへの保存を行うようにし、
-　実際にデータベースに登録できるか確かめるところから
-　つまり、コントローラーがフィールドで保持しているR2のやつは
-　サービスが持つようにする。
-
-　ProductCreateFormからProductCreateDtoへの変換は
-　コントローラーで行うべきか、サービスで行うべきか？
-　FormのファイルをURLに変換する必要がある。
-　あと、カテゴリ名からそのカテゴリデータのidを取得して
-　dtoクラスにはcategoryIdの形で保持させる必要がある？あと企業IDも。
-　とりあえずサービスクラスで全部やることにする。
-　コントローラーにビジネスロジックを持たせるのはなんか違う。
-　そしてForm,Dto,Entityクラスの変換にはMapStructを使用したい。
-
 　商品登録時に在庫数のフィールドも必要では？
 　というか商品テーブルに在庫数のカラム必要では？
 　累計購入数は商品テーブルになくても良い気がする。
 　別テーブルに企業ID,商品ID,累計購入数 の形で切り出したい。
-
-　企業idは現在ログインしている管理者のidを引っ張れればいい。
-　ということは、商品登録よりも先に企業登録の処理を考えなければならない？
-　認証はJWTトークンを用いる形で行い、トークン内に企業ID情報を格納する。
-
-　商品管理システムのトップページは認証は必要とせず、
-　トップページ内の商品管理、商品カテゴリ管理、企業情報変更などの
-　ボタンが押されてspringbootのapiに通信されたときに
-　springbootがトークンの有無を確認するように実装する。
 
 　JWTトークンを用いた認証処理を実装するところから
 
@@ -43,23 +18,6 @@ https://ik.am/entries/818
 https://spring.pleiades.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
 https://tech-lab.sios.jp/archives/8651
 
-　「クレームセットマッピングの構成」を参考にして
-　企業IDをトークン内に含めることができるかもしれない。
-　NimbusJwtのissuerUriにはどのURIを指定すればいいのか？
-　それはどうやったら調べられるのか？
-
-　OIDCとspringboot認証を併用する場合、
-　どっちを使用しているのか判別する方法は？
-　emailアドレスが一意であることを
-
-　とりあえずSpringBootにJWTを実装する。
-　アルゴリズムはECDSA,ED25519のどちらかを使用するのがよさそう。
-　nimbusにED25519はあるか？ありそう。
-　なんかnimbuse.joseでed25519を使用して参考サイトと同じような
-　クラス作るやり方がわからない。
-　とりあえずSpringSecurityでED25519を使うのはかなり面倒そうなので、
-　ECDSAで実装することにする。
-
 　管理システム用とECサイト用でSecurityFilterを分けたい。
 　つまり、UserDetailsServiceを実装した
 　CompanyDetailsServiceとEcsiteUserDetailsServiceの2つを実装したい。
@@ -67,12 +25,85 @@ https://tech-lab.sios.jp/archives/8651
 　場合に応じてどっちのUserDetailsServiceを使い分けるみたいなことを
 　実現する方法がわからない。
 
-　opensslでed25519の鍵ペアを作成
-https://pebble8888.hatenablog.com/entry/2019/04/30/211832
+　まずSecurityFilterChainのパスを確認して
+　SecurityMatcher()は指定したパス以下のリクエストをその内容で保護する。
+　つまり、管理システムとECサイトとでトップのエンドポイントを
+　/manage, /ecsite のように分ければ、
+　2つのSecurityFilterChainを宣言して実現できるはず。
+　そのメソッド内でAuthenticationManagerの引数に
+　CompanyDetailsService service のようにすれば、意図している方の
+　UserDetailsServiceクラスがDIされるはず。
+
+　問題はトップエンドポイントの分け方だが、
+　コントローラー内で複数のエンドポイントに分けることができるのだろうか？
+　それは無理そうな気がする。そうすると、管理システムとECサイトで
+　コントローラーを分けなければならなくなるのでは？
+　商品一覧は同じような画面を使おうと思っているため、
+　商品に関するcontrollerを2つ作るのは無駄なのでは？
+　でもcontrollerだけならまだ大丈夫だろうか？
+
+　フロントからspringbootへの通信について、最初は
+　本来使用したいエンドポイントへアクセスするような指定を
+　javascriptでして、もし401が返ってきたら
+　/tokenにアクセスするようなメソッドを作成すればよい？
+　まずはサインアップしてデータベースに登録できるかどうかを確かめる。
+　トップ画面で/tokenにリクエストを送る？
+　/tokenはトークン生成用リクエストだから、既にトークンを
+　持っている場合に/tokenにリクエストを送信したらどうなるのか？
+
+　トップ画面から商品管理、商品カテゴリ管理、企業情報変更
+　などの各画面に遷移するタイミングでトークンの有無を調べたいが、
+　ここはSpringBootは関与せずフロントのみで完結する範囲のため、
+　どのようにトークンの有無を調べればよいのか？
+　フロントページの遷移は前ページのリクエスト内容を調べることはできるのか？
+　セキュリティ的にはローカルストレージにJWTトークンを保存すると、
+　スクリプトからアクセスされてしまう可能性があるとのこと。
+　httponly cookieならサーバーへのHTTPリクエストの際にのみトークンが送信される。
+　しかしそうすると、フロント間のページ遷移でトークンを現在保持しているか
+　どうかの判別がつかなくなってしまうのでは？
+　コントローラーに認証用のエンドポイントを作れば解決できそうな気はする。
+　それが一番よさそうではある。
+
+　JWTトークンはcookieに保存し、HttpOnlyを付加する
+　　jsからは付与できないのでサーバー側で付与する必要があるとのこと。
+　　SpringBootからはJWTトークンを含めたCookieの形で返す。
+
+　認証確認用のエンドポイントを新たに作成する
+　　CookieにJWTトークンが格納されているか調べる。なければ403エラー
+　　格納されていれば署名が正しいか検証する。ここで、疑問なのが、
+　　現在はリクエストに対してSpringSecurityが自動でトークンを検証
+　　してくれる構成になっていると思うのだが、これをカスタムにする必要がある？
+　　SpringSecurityは恐らくリクエストボディにJWTトークンがあるかどうかで
+　　判定をすると思うのだが、それだとCookie
+
+　SpringSecurityを無効化するわけにはいかない。無効化すると
+　エンドポイントそれぞれのメソッドの最初にカスタム認証処理を
+　自分で書かなきゃいけなくなるはず。それは面倒すぎる。
+　要は、本来リクエストにJWTトークンが含まれているか確認するところを、
+　Cookieにトークンが含まれているかの確認に置き換えたい、だけである。
+
+　トップページから各ページに遷移する際は認証確認用のエンドポイントに接続する
+　認証確認用エンドポイントからトークンを受け取った後、ページ遷移を行う
+　その後に商品追加を行って認証が通ること
+
+　cookieの使い方
+　現在SecurityFilterChainに設定している.oauth2ResourceServer().oauth.jwt()
+　を削除して、参考サイトのようにCookie用のカスタムフィルターを
+　SpringSecurityに組み込む方法を使えば実装できそう。
+https://www.takatechskill.com/archives/453
+
+　/admin/token, /ecsite/token はトークンが無ければユーザ名とパスワード
+　それ以外はCookieチェック
+　というか、せっかくだから認可で管理システム用とECサイトシステム用で
+　わければいいのでは？JWTの認可の勉強にもなるし
+
+　というか、複数企業がそれぞれのECサイトを作るみたいなの
+　現在の設計だと無理では？顧客がある企業のECサイトに登録したとして、
+　その企業の企業IDをどうやって引っ張ってくるのか？無理では？
+　とりあえず1社の想定で実装することにする。
+
 https://bitbucket.org/connect2id/nimbus-jose-jwt/src/master/src/main/java/com/nimbusds/
 https://docs.oracle.com/javase/jp/22/docs/api/java.base/java/security/interfaces/package-summary.html
-
-　S3Configもレコードにできるのならしたい。
 
 ======================================================================
 
@@ -86,6 +117,12 @@ https://docs.oracle.com/javase/jp/22/docs/api/java.base/java/security/interfaces
 　バケットを分ける必要はなく、階層で表現すればよい。
 　そうすれば、データベースからgenreを取得してその文字列をそのまま
 　取得したい階層に指定することができる。
+
+　OIDCでJWTトークンを生成する場合、認証が終わった後に
+　SpringBootとOIDC間でやり取りすることは可能なのか？
+　それができるなら、そこで企業IDをOIDCに送信してトークン内に含められる？
+
+　S3Configもレコードにできるのならしたい。
 
 ======================================================================
 
@@ -130,3 +167,10 @@ https://blog.ricemountainer.net/posts/2017/453836237/
 
 springbootからR2にアクセスするコードは以下参照
 https://developers.cloudflare.com/r2/examples/aws/aws-sdk-java/
+
+コントローラーのメソッドの引数にUriComponentsBuilderを受け取ることで、
+簡単に相対パスのURLを作成することができる。
+例えば、コントローラのパスが/controller、メソッドのパスが/abc だった場合、
+builder.path("") とすると、http://localhost:8080/controller/abc
+といったURLを作成することができる。
+https://techorgana.com/java/java_web_flamework/spring/5266/

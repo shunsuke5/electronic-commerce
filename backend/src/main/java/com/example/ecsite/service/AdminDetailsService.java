@@ -1,6 +1,6 @@
 package com.example.ecsite.service;
 
-import com.example.ecsite.repository.CompanyRepository;
+import com.example.ecsite.repository.AdministratorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,9 +12,9 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class CompanyDetailsService implements UserDetailsService {
+public class AdminDetailsService implements UserDetailsService {
 
-    private final CompanyRepository repository;
+    private final AdministratorRepository repository;
 
     public UserDetails loadUserByUsername(String companyName) {
         return repository.findByName(companyName)

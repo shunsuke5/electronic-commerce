@@ -1,7 +1,6 @@
 package com.example.ecsite.data.dto.product;
 
 public class ProductCreateDto {
-    private Long companyId;
     private Long categoryId;
     private String name;
     private int price;

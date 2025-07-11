@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Company {
+public class Administrator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

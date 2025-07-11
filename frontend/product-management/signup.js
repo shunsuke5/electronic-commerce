@@ -7,13 +7,13 @@ button.addEventListener("click", async () => {
     const formData = new FormData(form);
 
     try {
-        const response = await fetch(BASE_URL + "/admin/token", {
+        const response = await fetch(BASE_URL + "/create/admin", {
             method: "POST",
             body: formData,
         });
 
         if (response.ok) {
-            window.location.href = "top.html";
+            window.location.href = "login.html";
         } else if (response.status === 401) {
             alert("認証失敗");
         } else {
