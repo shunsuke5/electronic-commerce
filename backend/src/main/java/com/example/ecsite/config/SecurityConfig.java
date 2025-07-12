@@ -14,9 +14,9 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.oauth2.core.authorization.OAuth2AuthorizationManagers.hasScope;
-
 import java.time.Clock;
+
+import static org.springframework.security.oauth2.core.authorization.OAuth2AuthorizationManagers.hasScope;
 
 @Configuration
 public class SecurityConfig {
@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/customer/create/").permitAll()
                         .anyRequest().authenticated()
                 )
+                // TODO: Cookie認証をFilterに組み込む
                 .formLogin(fl -> fl.disable())
                 .csrf(csrf -> csrf.disable());
 
@@ -45,9 +46,7 @@ public class SecurityConfig {
                         .anyRequest().access(hasScope("role:admin"))
                         .anyRequest().authenticated())
                 .authenticationManager(manager)
-                .oauth2ResourceServer(oauth ->
-                        oauth.jwt(jwt -> {
-                        }))
+                // TODO: Cookie認証をFilterに組み込む
                 .formLogin(fl -> fl.disable())
                 .csrf(csrf -> csrf.disable());
         return http.build();
@@ -62,23 +61,21 @@ public class SecurityConfig {
                         .anyRequest().access(hasScope("role:customer"))
                         .anyRequest().authenticated())
                 .authenticationManager(manager)
-                .oauth2ResourceServer(oauth ->
-                        oauth.jwt(jwt -> {
-                        }))
+                // TODO: Cookie認証をFilterに組み込む
                 .formLogin(fl -> fl.disable())
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }
 
     @Bean("admin")
-    public AuthenticationManager authenticationManager(AdminDetailsService service, PasswordEncoder encoder) {
+    public AuthenticationManager adminAuthenticationManager(AdminDetailsService service, PasswordEncoder encoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(service);
         provider.setPasswordEncoder(encoder);
         return new ProviderManager(provider);
     }
 
     @Bean("customer")
-    public AuthenticationManager authenticationManager(CustomerDetailsService service, PasswordEncoder encoder) {
+    public AuthenticationManager customerAuthenticationManager(CustomerDetailsService service, PasswordEncoder encoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(service);
         provider.setPasswordEncoder(encoder);
         return new ProviderManager(provider);

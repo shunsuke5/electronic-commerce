@@ -7,7 +7,7 @@ button.addEventListener("click", async () => {
     const formData = new FormData(form);
 
     try {
-        const response = await fetch(BASE_URL + "/create/admin", {
+        const response = await fetch(BASE_URL + "/admin/create", {
             method: "POST",
             body: formData,
         });

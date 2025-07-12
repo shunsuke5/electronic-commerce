@@ -24,8 +24,8 @@ public class R2Config {
     @Bean
     public S3Client S3Client(S3Config config) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(
-                config.getAccessKey(),
-                config.getSecretKey()
+                config.accessKey(),
+                config.secretKey()
         );
 
         S3Configuration serviceConfiguration = S3Configuration.builder()
@@ -33,7 +33,7 @@ public class R2Config {
                 .build();
 
         return S3Client.builder()
-                .endpointOverride(URI.create(config.getEndpoint()))
+                .endpointOverride(URI.create(config.endpoint()))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .region(Region.of("auto"))
                 .serviceConfiguration(serviceConfiguration)

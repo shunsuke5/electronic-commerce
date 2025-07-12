@@ -18,7 +18,7 @@ public class ProductService {
     }
 
     public void register(ProductCreateForm form, MultipartFile file) {
-        r2Client.putObject(file);
+        this.r2Client.putObject(file);
         System.out.println(BUCKET_URL + "/" + file.getOriginalFilename());
     }
 }
