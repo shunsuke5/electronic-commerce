@@ -49,7 +49,7 @@ public class CloudflareR2Client {
                 .contentType(file.getContentType())
                 .build();
         try {
-            s3Client.putObject(request,RequestBody.fromBytes(file.getBytes())
+            s3Client.putObject(request, RequestBody.fromBytes(file.getBytes())
             );
         } catch (IOException e) {
             e.getStackTrace();

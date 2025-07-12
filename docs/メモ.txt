@@ -4,87 +4,25 @@
 　というか商品テーブルに在庫数のカラム必要では？
 　累計購入数は商品テーブルになくても良い気がする。
 　別テーブルに企業ID,商品ID,累計購入数 の形で切り出したい。
-
-　JWTトークンを用いた認証処理を実装するところから
-
-　フロントのフォームactionにはフロントで遷移したいページを指定するのでは？
-　ページの遷移は全てapiを通す必要があるので、
-　buttonを使用してjavascriptで制御するようにする。
-　javascriptでまず最初にspringbootのトークン確認用のマッピングに
-　リクエストを送信し、持っていればページ遷移ができるし、
-　持っていなければログインページに遷移させるようにする。
-
-https://ik.am/entries/818
-https://spring.pleiades.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
-https://tech-lab.sios.jp/archives/8651
-
-　管理システム用とECサイト用でSecurityFilterを分けたい。
-　つまり、UserDetailsServiceを実装した
-　CompanyDetailsServiceとEcsiteUserDetailsServiceの2つを実装したい。
-　ただ、そんなことできるのか？Bean登録するから
-　場合に応じてどっちのUserDetailsServiceを使い分けるみたいなことを
-　実現する方法がわからない。
-
-　まずSecurityFilterChainのパスを確認して
-　SecurityMatcher()は指定したパス以下のリクエストをその内容で保護する。
-　つまり、管理システムとECサイトとでトップのエンドポイントを
-　/manage, /ecsite のように分ければ、
-　2つのSecurityFilterChainを宣言して実現できるはず。
-　そのメソッド内でAuthenticationManagerの引数に
-　CompanyDetailsService service のようにすれば、意図している方の
-　UserDetailsServiceクラスがDIされるはず。
-
-　問題はトップエンドポイントの分け方だが、
-　コントローラー内で複数のエンドポイントに分けることができるのだろうか？
-　それは無理そうな気がする。そうすると、管理システムとECサイトで
-　コントローラーを分けなければならなくなるのでは？
-　商品一覧は同じような画面を使おうと思っているため、
-　商品に関するcontrollerを2つ作るのは無駄なのでは？
-　でもcontrollerだけならまだ大丈夫だろうか？
-
-　フロントからspringbootへの通信について、最初は
-　本来使用したいエンドポイントへアクセスするような指定を
-　javascriptでして、もし401が返ってきたら
-　/tokenにアクセスするようなメソッドを作成すればよい？
-　まずはサインアップしてデータベースに登録できるかどうかを確かめる。
-　トップ画面で/tokenにリクエストを送る？
-　/tokenはトークン生成用リクエストだから、既にトークンを
-　持っている場合に/tokenにリクエストを送信したらどうなるのか？
-
-　トップ画面から商品管理、商品カテゴリ管理、企業情報変更
-　などの各画面に遷移するタイミングでトークンの有無を調べたいが、
-　ここはSpringBootは関与せずフロントのみで完結する範囲のため、
-　どのようにトークンの有無を調べればよいのか？
-　フロントページの遷移は前ページのリクエスト内容を調べることはできるのか？
-　セキュリティ的にはローカルストレージにJWTトークンを保存すると、
-　スクリプトからアクセスされてしまう可能性があるとのこと。
-　httponly cookieならサーバーへのHTTPリクエストの際にのみトークンが送信される。
-　しかしそうすると、フロント間のページ遷移でトークンを現在保持しているか
-　どうかの判別がつかなくなってしまうのでは？
-　コントローラーに認証用のエンドポイントを作れば解決できそうな気はする。
-　それが一番よさそうではある。
+　　→ 注文テーブルに注文数量カラムを追加して、
+　　　商品テーブルにも累計購入数カラムは保持しておく。
+　　　そもそも注文数量カラムは必要だし、注文数量カラムがordersに
+　　　追加されたからと言って商品テーブルから累計購入数を
+　　　削除していいわけではない。理由は、注文は絶え間なく増え続けるため
+　　　一定期間後にデータを外部に切り出したり削除しなければならない。
+　　　そのため、商品テーブルに累計購入数の情報だけ持っておけば、
+　　　人気順などですぐにそこを見て計算することができる。
 
 　JWTトークンはcookieに保存し、HttpOnlyを付加する
 　　jsからは付与できないのでサーバー側で付与する必要があるとのこと。
 　　SpringBootからはJWTトークンを含めたCookieの形で返す。
 
-　認証確認用のエンドポイントを新たに作成する
+　トップ画面が使用する認証確認用のエンドポイントを新たに作成する
 　　CookieにJWTトークンが格納されているか調べる。なければ403エラー
-　　格納されていれば署名が正しいか検証する。ここで、疑問なのが、
-　　現在はリクエストに対してSpringSecurityが自動でトークンを検証
-　　してくれる構成になっていると思うのだが、これをカスタムにする必要がある？
-　　SpringSecurityは恐らくリクエストボディにJWTトークンがあるかどうかで
-　　判定をすると思うのだが、それだとCookie
-
-　SpringSecurityを無効化するわけにはいかない。無効化すると
-　エンドポイントそれぞれのメソッドの最初にカスタム認証処理を
-　自分で書かなきゃいけなくなるはず。それは面倒すぎる。
-　要は、本来リクエストにJWTトークンが含まれているか確認するところを、
-　Cookieにトークンが含まれているかの確認に置き換えたい、だけである。
-
-　トップページから各ページに遷移する際は認証確認用のエンドポイントに接続する
-　認証確認用エンドポイントからトークンを受け取った後、ページ遷移を行う
-　その後に商品追加を行って認証が通ること
+　　格納されていれば署名が正しいか検証する。
+　　トップページから各ページに遷移する際は認証確認用のエンドポイントに接続する
+　　認証確認用エンドポイントからトークンを受け取った後、ページ遷移を行う
+　　その後に商品追加を行って認証が通ること
 
 　cookieの使い方
 　現在SecurityFilterChainに設定している.oauth2ResourceServer().oauth.jwt()
@@ -97,13 +35,86 @@ https://www.takatechskill.com/archives/453
 　というか、せっかくだから認可で管理システム用とECサイトシステム用で
 　わければいいのでは？JWTの認可の勉強にもなるし
 
-　というか、複数企業がそれぞれのECサイトを作るみたいなの
-　現在の設計だと無理では？顧客がある企業のECサイトに登録したとして、
-　その企業の企業IDをどうやって引っ張ってくるのか？無理では？
-　とりあえず1社の想定で実装することにする。
+　各Entityクラスには共通しているカラムがあるので
+　BaseEntityを定義してそれを継承する形にする。
+　以下サイトでそのようにしていたので、良いなと思い参考にした。
+https://qiita.com/shukawam/items/6e379df031dccebddd36
 
-https://bitbucket.org/connect2id/nimbus-jose-jwt/src/master/src/main/java/com/nimbusds/
-https://docs.oracle.com/javase/jp/22/docs/api/java.base/java/security/interfaces/package-summary.html
+　Spring Data Jpaがデフォルトで提供するsave()メソッドについて、
+　<S extends T> S save(S entity)　のような実装であるため、
+　例えば、implements JpaRepository<User, Long> で実装している場合
+　Userエンティティクラスを継承したクラスであればこのRepositoryクラスの
+　Saveメソッドに渡すことが可能である。
+
+　@EnableJpaAuditing, @EntityListeners(AuditingEntityListener.class)
+　各テーブルのカラム(ユーザを表すテーブル以外)に作成者、更新者の情報も
+　付加した方が良いと思うのでそのように実装する。
+　Administrator,Customer -> id, name, createdAt, updatedAt
+　Order -> id, createdAt
+　それ以外 -> id, name, createdAt,updatedAt,createdBy,updatedBy
+　よく考えたら注文は変更できたら困るので、ordersテーブルにupdatedAtはいらない気がする。
+
+　customersテーブルも、ECサイトユーザの認証情報のみを保持するusersテーブルと、
+　残高などを保持するcustomersテーブルとに分けた方が良いのだろうか？
+　しかし、customersテーブルにECサイトを利用するユーザの情報を
+　切り出したからと言って、createdByは常にそのcustomer情報に該当するuserなので、
+　別に切り出さなくてもいいのではないか？
+
+　BaseEntity,UserAuditableEntityをabstractクラスにして
+　監査を有効にするアノテーションをつけてもそれを継承するクラスで
+　ちゃんとcreated,updatedは機能するのだろうか？
+
+　BaseEntity,UserAuditEntityに監査用のアノテーションをつける。
+　必要なのであれば監査用のconfigクラスも作成する。
+　この2つのEntityを継承したEntityクラスでも問題なく
+　その時々の日時やユーザが格納される根拠を調べる。
+
+　AuditAwareの実装参考サイト
+https://www.memory-lovers.blog/entry/2018/01/10/014046
+https://spring.pleiades.io/spring-data/jpa/reference/auditing.html#auditing.auditor-aware
+
+　MapStructの実装を進めて、AdminCreateForm -> Administratorへの変換、
+　Administrator -> AdminCreateResponseへの変換ができるようにする
+
+　認証済みユーザをbyに指定する方法の参考
+https://qiita.com/kunikunipon/items/291f1767edf927e672e5
+
+　MapStructは基盤Mapperインタフェースを定義して、
+　そこでspringのDI設定やコンストラクタ設定、
+　異なるプロパティを無視する設定をしておき、
+　各Mapperインタフェースでその基盤Mapperを指定する形がよさそう。
+https://qiita.com/konkon-T/items/149cf0dc3e31a54de6be
+
+　どうやらLocalDateTimeはカスタムコンバーターを作成しないとダメっぽい？
+https://mike-neck.hatenadiary.com/entry/2014/09/11/162055
+　いややっぱり大丈夫そう
+https://stackoverflow.com/questions/54840769/how-to-persist-localdate-with-jpa
+　なんならcolumnDefinitionつけなくてもエラーが出ない。
+　「JdbcTypeRecommendationException: Could not determine recommended
+　JdbcType for Java type 'com.example.ecsite.data.entity.Administrator'」
+　のエラーが出る理由は、上記のカスタムコンバーターやcolumnDefinirionではなく、
+　AdministratorエンティティクラスがSerializableを実装していないことだった。
+　しかしなぜ他のEntityではこのエラーが出ないのか？実装を進めていったら
+　他のEntityもこのエラーが出るのか？いや、監査対象のEntityクラスだから
+　Serializableをつけないと、createdBy,updatedByにバインドできないということ？
+　それだと納得できる。
+
+「Failed to bind properties under 'jwt.private-key' to java.security.interfaces.ECPrivateKey:」
+　のエラーが出る。秘密鍵ファイルの内容をECPrivateKeyインタフェースに変換する
+　コンバーターが見つからないとのこと。てことは定義したら行けるのだろうか？
+　しかし、参考サイトにそんな記述は無かったような気がするのだが。
+　SecurityFilterChainでJWTを有効にしていないからだろうか？
+　それなら納得できる。だが、有効化するとWWW-
+
+　.oauth2ResourceServer( rs -> rs.jwt( jwt -> {})) 内で、
+　jwt.bearerTokenResolver(BearerTokenResolver)で
+　リクエストからベアラートークンを解決する方法をカスタマイズできる。
+　BearerTokenResolverインタフェースのresolve()メソッドは引数に
+　HttpServletRequestを受け取る。Cookieを検証するカスタムフィルターも
+　引数にHttpServletRequestを受け取っているため、もしかしたら
+　SpringSecurityがデフォルトで用意するJWT認証を上手くカスタマイズできるのでは？
+　ただ、Authentication周りがよくわからないので、
+　とりあえずCookieの参考サイトの通りに進めてみるのが良いかもしれない。
 
 ======================================================================
 

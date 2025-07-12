@@ -16,15 +16,15 @@ public class AdminDetailsService implements UserDetailsService {
 
     private final AdministratorRepository repository;
 
-    public UserDetails loadUserByUsername(String companyName) {
-        return repository.findByName(companyName)
+    public UserDetails loadUserByUsername(String adminName) {
+        return this.repository.findByName(adminName)
                 .map(
-                        company -> new User(
-                                company.getName(),
-                                company.getPassword(),
+                        admin -> new User(
+                                admin.getName(),
+                                admin.getPassword(),
                                 Collections.emptyList()
                         )
                 )
-                .orElseThrow(() -> new UsernameNotFoundException(companyName + " not found"));
+                .orElseThrow(() -> new UsernameNotFoundException(adminName + " not found"));
     }
 }
