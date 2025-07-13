@@ -1,18 +1,5 @@
 メモ
 
-　商品登録時に在庫数のフィールドも必要では？
-　というか商品テーブルに在庫数のカラム必要では？
-　累計購入数は商品テーブルになくても良い気がする。
-　別テーブルに企業ID,商品ID,累計購入数 の形で切り出したい。
-　　→ 注文テーブルに注文数量カラムを追加して、
-　　　商品テーブルにも累計購入数カラムは保持しておく。
-　　　そもそも注文数量カラムは必要だし、注文数量カラムがordersに
-　　　追加されたからと言って商品テーブルから累計購入数を
-　　　削除していいわけではない。理由は、注文は絶え間なく増え続けるため
-　　　一定期間後にデータを外部に切り出したり削除しなければならない。
-　　　そのため、商品テーブルに累計購入数の情報だけ持っておけば、
-　　　人気順などですぐにそこを見て計算することができる。
-
 　JWTトークンはcookieに保存し、HttpOnlyを付加する
 　　jsからは付与できないのでサーバー側で付与する必要があるとのこと。
 　　SpringBootからはJWTトークンを含めたCookieの形で返す。
@@ -30,99 +17,58 @@
 　SpringSecurityに組み込む方法を使えば実装できそう。
 https://www.takatechskill.com/archives/453
 
-　/admin/token, /ecsite/token はトークンが無ければユーザ名とパスワード
-　それ以外はCookieチェック
-　というか、せっかくだから認可で管理システム用とECサイトシステム用で
-　わければいいのでは？JWTの認可の勉強にもなるし
+　参考サイトと同じようにJJWTを使う形に変更しても良いかもしれない。
+　APIドキュメントは以下。
+https://javadoc.io/doc/io.jsonwebtoken/jjwt-api/latest/index.html
 
-　各Entityクラスには共通しているカラムがあるので
-　BaseEntityを定義してそれを継承する形にする。
-　以下サイトでそのようにしていたので、良いなと思い参考にした。
-https://qiita.com/shukawam/items/6e379df031dccebddd36
+　秘密鍵生成のところで使用しているKeys.secretKeyFor()メソッドは
+　どうやら現在は非推奨らしいので、例えばED25519を使用する場合は
+　JWKs.CRV.Ed25519.keyPair().build()を使用するらしい。
 
-　Spring Data Jpaがデフォルトで提供するsave()メソッドについて、
-　<S extends T> S save(S entity)　のような実装であるため、
-　例えば、implements JpaRepository<User, Long> で実装している場合
-　Userエンティティクラスを継承したクラスであればこのRepositoryクラスの
-　Saveメソッドに渡すことが可能である。
+　JJWTでscopeを設定するにはどうすればよいのだろうか？
+　claim()でscope:admin のようにすればよいだろうか？
 
-　@EnableJpaAuditing, @EntityListeners(AuditingEntityListener.class)
-　各テーブルのカラム(ユーザを表すテーブル以外)に作成者、更新者の情報も
-　付加した方が良いと思うのでそのように実装する。
-　Administrator,Customer -> id, name, createdAt, updatedAt
-　Order -> id, createdAt
-　それ以外 -> id, name, createdAt,updatedAt,createdBy,updatedBy
-　よく考えたら注文は変更できたら困るので、ordersテーブルにupdatedAtはいらない気がする。
+　JWTトークン作成の流れ
+1.ヘッダとペイロードを定義する
+2.ヘッダとペイロードをBASE64エンコードし.でつなげる
+3.エンコードされたヘッダとペイロードを指定したアルゴリズムと秘密鍵で署名する
+4.署名をBASE64エンコードする
+5.署名を.でつなげる
 
-　customersテーブルも、ECサイトユーザの認証情報のみを保持するusersテーブルと、
-　残高などを保持するcustomersテーブルとに分けた方が良いのだろうか？
-　しかし、customersテーブルにECサイトを利用するユーザの情報を
-　切り出したからと言って、createdByは常にそのcustomer情報に該当するuserなので、
-　別に切り出さなくてもいいのではないか？
+　JWTトークン検証の流れ
+1.HttpRequest.getCookie()でクッキーを取得
+2.クッキーにJWT_TOKENが含まれているか確認、なければ例外
+3.JWTトークンをデコードする
+4.クレームのsubからユーザ名、scopeからロールを取得する
+5.
 
-　BaseEntity,UserAuditableEntityをabstractクラスにして
-　監査を有効にするアノテーションをつけてもそれを継承するクラスで
-　ちゃんとcreated,updatedは機能するのだろうか？
+　SpringSecurityが標準で用意してくれてるJWTの機能をなるべく使おうと思ったが、
+　どうやら無理そうなので認証処理も自分で実装することにする。
+https://developer.mamezou-tech.com/blogs/2022/12/10/java-jwt-auth/
+https://zenn.dev/septeni_japan/articles/2025-05_spring_security
 
-　BaseEntity,UserAuditEntityに監査用のアノテーションをつける。
-　必要なのであれば監査用のconfigクラスも作成する。
-　この2つのEntityを継承したEntityクラスでも問題なく
-　その時々の日時やユーザが格納される根拠を調べる。
+　以下サイトで「Javaの標準APIでPKCS#1の鍵フォーマットは直接扱えないため、
+　最後に先ほど生成した秘密鍵を標準APIで扱えるPKCS#8[2]に変換します。」
+　と記載がある。
+https://developer.mamezou-tech.com/blogs/2022/12/25/rsa-java-jwt/
+　なんでできているんだろうと疑問だった以下サイトを改めてみてみると、
+　鍵生成のところでちゃんとそのようにしていた。
+https://ik.am/entries/818
+　openssl pkcs8 -topk8 -inform PEM -in private.pem -out private_key.pem -nocrypt
+　つまり、プロパティファイルから鍵が読み込めなかったのは当然だったのである。
+　道理で以前に行った時はできた覚えがあるのに、今回はできなかったのか。
+　と思ったら変換しても無理だった。RSAだとできてECDSAだとできないとか？
 
-　AuditAwareの実装参考サイト
-https://www.memory-lovers.blog/entry/2018/01/10/014046
-https://spring.pleiades.io/spring-data/jpa/reference/auditing.html#auditing.auditor-aware
+　KeyFactoryを使用しないと鍵からECPrivateKey,ECPublicKeyへの変換はできない。
+https://qiita.com/rawr/items/e356f765122637df3dea
 
-　MapStructの実装を進めて、AdminCreateForm -> Administratorへの変換、
-　Administrator -> AdminCreateResponseへの変換ができるようにする
+　最終的に以下サイトをとりあえず真似して、後から改良できそうなところを
+　改良していく形とする。
+https://www.takatechskill.com/archives/453
 
-　認証済みユーザをbyに指定する方法の参考
-https://qiita.com/kunikunipon/items/291f1767edf927e672e5
-
-　MapStructは基盤Mapperインタフェースを定義して、
-　そこでspringのDI設定やコンストラクタ設定、
-　異なるプロパティを無視する設定をしておき、
-　各Mapperインタフェースでその基盤Mapperを指定する形がよさそう。
-https://qiita.com/konkon-T/items/149cf0dc3e31a54de6be
-
-　どうやらLocalDateTimeはカスタムコンバーターを作成しないとダメっぽい？
-https://mike-neck.hatenadiary.com/entry/2014/09/11/162055
-　いややっぱり大丈夫そう
-https://stackoverflow.com/questions/54840769/how-to-persist-localdate-with-jpa
-　なんならcolumnDefinitionつけなくてもエラーが出ない。
-　「JdbcTypeRecommendationException: Could not determine recommended
-　JdbcType for Java type 'com.example.ecsite.data.entity.Administrator'」
-　のエラーが出る理由は、上記のカスタムコンバーターやcolumnDefinirionではなく、
-　AdministratorエンティティクラスがSerializableを実装していないことだった。
-　しかしなぜ他のEntityではこのエラーが出ないのか？実装を進めていったら
-　他のEntityもこのエラーが出るのか？いや、監査対象のEntityクラスだから
-　Serializableをつけないと、createdBy,updatedByにバインドできないということ？
-　それだと納得できる。
-
-「Failed to bind properties under 'jwt.private-key' to java.security.interfaces.ECPrivateKey:」
-　のエラーが出る。秘密鍵ファイルの内容をECPrivateKeyインタフェースに変換する
-　コンバーターが見つからないとのこと。てことは定義したら行けるのだろうか？
-　しかし、参考サイトにそんな記述は無かったような気がするのだが。
-　SecurityFilterChainでJWTを有効にしていないからだろうか？
-　それなら納得できる。だが、有効化するとWWW-
-
-　.oauth2ResourceServer( rs -> rs.jwt( jwt -> {})) 内で、
-　jwt.bearerTokenResolver(BearerTokenResolver)で
-　リクエストからベアラートークンを解決する方法をカスタマイズできる。
-　BearerTokenResolverインタフェースのresolve()メソッドは引数に
-　HttpServletRequestを受け取る。Cookieを検証するカスタムフィルターも
-　引数にHttpServletRequestを受け取っているため、もしかしたら
-　SpringSecurityがデフォルトで用意するJWT認証を上手くカスタマイズできるのでは？
-　ただ、Authentication周りがよくわからないので、
-　とりあえずCookieの参考サイトの通りに進めてみるのが良いかもしれない。
+ログインコントローラの作成から
 
 ======================================================================
-
-　商品のジャンルは商品登録の際に選択できるようにしたい。
-　ということはcategoriesテーブルを新たに作成し、
-　そっちから先にデータを登録して
-　商品を登録する際は既にあるcategoriesテーブルのデータを選択するように
-　させた方が良いのでは？
 
 　R2はプレフィックスで階層を表現できるため、商品のジャンルごとに
 　バケットを分ける必要はなく、階層で表現すればよい。
@@ -133,7 +79,15 @@ https://stackoverflow.com/questions/54840769/how-to-persist-localdate-with-jpa
 　SpringBootとOIDC間でやり取りすることは可能なのか？
 　それができるなら、そこで企業IDをOIDCに送信してトークン内に含められる？
 
-　S3Configもレコードにできるのならしたい。
+　.oauth2ResourceServer( rs -> rs.jwt( jwt -> {})) 内で、
+　jwt.bearerTokenResolver(BearerTokenResolver)で
+　リクエストからベアラートークンを解決する方法をカスタマイズできる。
+　BearerTokenResolverインタフェースのresolve()メソッドは引数に
+　HttpServletRequestを受け取る。Cookieを検証するカスタムフィルターも
+　引数にHttpServletRequestを受け取っているため、もしかしたら
+　SpringSecurityがデフォルトで用意するJWT認証を上手くカスタマイズできるのでは？
+　ただ、Authentication周りがよくわからないので、
+　とりあえずCookieの参考サイトの通りに進めてみるのが良いかもしれない。
 
 ======================================================================
 
@@ -185,3 +139,9 @@ https://developers.cloudflare.com/r2/examples/aws/aws-sdk-java/
 builder.path("") とすると、http://localhost:8080/controller/abc
 といったURLを作成することができる。
 https://techorgana.com/java/java_web_flamework/spring/5266/
+
+「JdbcTypeRecommendationException: Could not determine recommended
+　JdbcType for Java type 'com.example.ecsite.data.entity.Administrator'」
+のエラー解決は、監査ユーザに設定するAdministratorエンティティクラスが
+Serializableを実装する必要があったことによるエラー。Serializableを実装して解決。
+https://stackoverflow.com/questions/73312803/could-not-determine-recommended-jdbctype-for-class
