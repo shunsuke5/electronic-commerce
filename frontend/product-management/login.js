@@ -13,7 +13,8 @@ button.addEventListener("click", async () => {
         });
 
         if (response.ok) {
-            window.location.href = "top.html";
+            console.log(response);
+            // window.location.href = "top.html";
         } else if (response.status === 401) {
             alert("認証失敗");
         } else {

@@ -1,33 +1,5 @@
 メモ
 
-　JWTトークンはcookieに保存し、HttpOnlyを付加する
-　　jsからは付与できないのでサーバー側で付与する必要があるとのこと。
-　　SpringBootからはJWTトークンを含めたCookieの形で返す。
-
-　トップ画面が使用する認証確認用のエンドポイントを新たに作成する
-　　CookieにJWTトークンが格納されているか調べる。なければ403エラー
-　　格納されていれば署名が正しいか検証する。
-　　トップページから各ページに遷移する際は認証確認用のエンドポイントに接続する
-　　認証確認用エンドポイントからトークンを受け取った後、ページ遷移を行う
-　　その後に商品追加を行って認証が通ること
-
-　cookieの使い方
-　現在SecurityFilterChainに設定している.oauth2ResourceServer().oauth.jwt()
-　を削除して、参考サイトのようにCookie用のカスタムフィルターを
-　SpringSecurityに組み込む方法を使えば実装できそう。
-https://www.takatechskill.com/archives/453
-
-　参考サイトと同じようにJJWTを使う形に変更しても良いかもしれない。
-　APIドキュメントは以下。
-https://javadoc.io/doc/io.jsonwebtoken/jjwt-api/latest/index.html
-
-　秘密鍵生成のところで使用しているKeys.secretKeyFor()メソッドは
-　どうやら現在は非推奨らしいので、例えばED25519を使用する場合は
-　JWKs.CRV.Ed25519.keyPair().build()を使用するらしい。
-
-　JJWTでscopeを設定するにはどうすればよいのだろうか？
-　claim()でscope:admin のようにすればよいだろうか？
-
 　JWTトークン作成の流れ
 1.ヘッダとペイロードを定義する
 2.ヘッダとペイロードをBASE64エンコードし.でつなげる
@@ -42,56 +14,49 @@ https://javadoc.io/doc/io.jsonwebtoken/jjwt-api/latest/index.html
 4.クレームのsubからユーザ名、scopeからロールを取得する
 5.
 
-　SpringSecurityが標準で用意してくれてるJWTの機能をなるべく使おうと思ったが、
-　どうやら無理そうなので認証処理も自分で実装することにする。
-https://developer.mamezou-tech.com/blogs/2022/12/10/java-jwt-auth/
-https://zenn.dev/septeni_japan/articles/2025-05_spring_security
-
-　以下サイトで「Javaの標準APIでPKCS#1の鍵フォーマットは直接扱えないため、
-　最後に先ほど生成した秘密鍵を標準APIで扱えるPKCS#8[2]に変換します。」
-　と記載がある。
-https://developer.mamezou-tech.com/blogs/2022/12/25/rsa-java-jwt/
-　なんでできているんだろうと疑問だった以下サイトを改めてみてみると、
-　鍵生成のところでちゃんとそのようにしていた。
-https://ik.am/entries/818
-　openssl pkcs8 -topk8 -inform PEM -in private.pem -out private_key.pem -nocrypt
-　つまり、プロパティファイルから鍵が読み込めなかったのは当然だったのである。
-　道理で以前に行った時はできた覚えがあるのに、今回はできなかったのか。
-　と思ったら変換しても無理だった。RSAだとできてECDSAだとできないとか？
-
-　KeyFactoryを使用しないと鍵からECPrivateKey,ECPublicKeyへの変換はできない。
-https://qiita.com/rawr/items/e356f765122637df3dea
-
-　最終的に以下サイトをとりあえず真似して、後から改良できそうなところを
-　改良していく形とする。
-https://www.takatechskill.com/archives/453
-
-ログインコントローラの作成から
-
-　「Caused by: org.springframework.beans.BeanInstantiationException:
-　Failed to instantiate [org.springframework.security.config.annotation.web.builders.HttpSecurity]:
-　Factory method 'httpSecurity' threw exception with message:
-　Found 2 beans for type interface org.springframework.security.authentication.AuthenticationManager,
-　but none marked as primary」のエラーが出る。
-　普通に@Primaryアノテーションを付けたら解決したが、
-　なぜ@Qualifierでは解決できないのか？
-
-　/admin/create が403エラーになってしまっている。
-
-　前もなったかもしれないが、
-　SecurityFilterChainを複数定義する時は、
-　SecurityMatcher()を使用してどのエンドポイントの時に
-　使われるSecurityFilterChainなのかを指定する必要がある。
-
-　監査機能のサンプルコードが動かない。
-　サンプルコードに書いてあるやり方ではStringからUserへのキャストはできないらしい。
-　自分でキャストする処理を実装する必要がある。
-　というか、勘違いしていたがCreatedBy,LastModifiedByに指定するのは
-　認証されたユーザを表す、つまりSpringSecurityでいうところのUserクラスなので
-　AdministratorではなくUserでいいのでは？
-
 　Formクラスもレコードでいいのでは？ユーザの入力をサーバ側で
 　書き換えられる必要などないはずなので、できそうなら変更する
+
+　ログインで/token/adminを指定してるはずなのに、
+　Cookieが無いと403エラーが返されてしまう。
+　なぜ/admin/createはCookie認証でない方のSecurityFilterChainをちゃんと指定できたのに、
+　/token/adminではできなくなっているのか？
+　原因は、SecurityMatcher()の説明にあった以下の文章かもしれない。
+　「securityMatcher(String...) を呼び出すと、
+　以前の securityMatcher(String...) (文字列)}}、
+　securityMatcher(RequestMatcher) ()}、
+　securityMatchers(Customizer) (文字列)}、
+　および securityMatchers() (文字列)} の呼び出しがオーバーライドされます」
+　/admin/createが機能して/token/adminが機能しないのは、
+　先にsecurityMatcher("/token/**) を記述してしまっているから、
+　後に記述したsecurityMatcher("/admin/create)によってそれが上書きされてしまい、
+　/admin/createのみが有効となっている？
+　securityMatchers(Customizer) を使用すれば解決できそう。
+　　→ 解決できた。
+
+　Cookieをサーバに送信できていない。
+　/token/adminからのレスポンスには、ちゃんとCookieが含まれている。
+　しかし、開発者ツールのApplication -> Cookiesを確認しても
+　該当のCookieが保存されていない。
+https://developer.mozilla.org/ja/docs/Web/HTTP/Reference/Headers/Set-Cookie
+　JavaScriptのSet-Cookieに以下のようなことが書いてある。
+　「フェッチ API または XMLHttpRequest API のリクエストが CORS を使用する 場合、
+　ブラウザーはリクエストに資格情報がない限り、サーバーのレスポンスにある
+　Set-Cookie ヘッダーを無視します。」
+　これが原因だろうか？CORSを使って通信しているので無視されてしまっているのか？
+　credentialsをincludeにすればよい？includeに設定しても、
+　Samesite属性がStrictまたはLaxの場合はCookieはサイトをまたいで送信されないとのこと。
+
+　「さらに、この状況ではサーバーは Access-Control-Allow-Origin
+　レスポンスヘッダーでクライアントの元のサーバーを
+　明示的に指定しなければなりません（つまり、* は許可されません）。」
+　これも原因だろうか？
+https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch#including_credentials
+
+　setAllowedHeaders()はCORSリクエストを許可するヘッダ情報を指定する？
+https://ti-tomo-knowledge.hatenablog.com/entry/2019/12/15/200327
+
+Cookie認証を通過できるように実装するところから
 
 ======================================================================
 
@@ -170,3 +135,11 @@ https://techorgana.com/java/java_web_flamework/spring/5266/
 のエラー解決は、監査ユーザに設定するAdministratorエンティティクラスが
 Serializableを実装する必要があったことによるエラー。Serializableを実装して解決。
 https://stackoverflow.com/questions/73312803/could-not-determine-recommended-jdbctype-for-class
+
+Javaの標準APIではPKCS#1の鍵フォーマットは直接扱えないため、
+以下のようなコマンドで、標準APIで扱えるPKCS#8に変換する必要がある。
+openssl pkcs8 -in jwt.key.p1 -out jwt.key -topk8 -nocrypt
+https://developer.mamezou-tech.com/blogs/2022/12/25/rsa-java-jwt/
+
+KeyFactoryを使用しないと鍵からECPrivateKey,ECPublicKeyへの変換はできない。
+https://qiita.com/rawr/items/e356f765122637df3dea
