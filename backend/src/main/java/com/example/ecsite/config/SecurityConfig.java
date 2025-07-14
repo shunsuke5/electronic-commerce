@@ -33,8 +33,11 @@ public class SecurityConfig {
             UrlBasedCorsConfigurationSource source,
             JwtUtils jwtUtils) throws Exception {
         http
-                .securityMatcher("/token/**")
-                .securityMatcher("/admin/create")
+                .securityMatchers(matchers -> matchers
+                        .requestMatchers("/token/**", "/admin/create")
+                )
+//                .securityMatcher("/token/**")
+//                .securityMatcher("/admin/create")
                 .cors(cors -> cors.configurationSource(source))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth

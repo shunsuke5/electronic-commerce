@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +25,11 @@ public class AuthController {
     private final AdministratorRepository repository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
+
+    @GetMapping("/auth")
+    public void auth() {
+        System.out.println("auth");
+    }
 
     @PostMapping("/token/admin")
     public ResponseEntity<?> login(@ModelAttribute AdminLoginForm form, HttpServletResponse response) {
