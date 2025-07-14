@@ -68,6 +68,31 @@ https://www.takatechskill.com/archives/453
 
 ログインコントローラの作成から
 
+　「Caused by: org.springframework.beans.BeanInstantiationException:
+　Failed to instantiate [org.springframework.security.config.annotation.web.builders.HttpSecurity]:
+　Factory method 'httpSecurity' threw exception with message:
+　Found 2 beans for type interface org.springframework.security.authentication.AuthenticationManager,
+　but none marked as primary」のエラーが出る。
+　普通に@Primaryアノテーションを付けたら解決したが、
+　なぜ@Qualifierでは解決できないのか？
+
+　/admin/create が403エラーになってしまっている。
+
+　前もなったかもしれないが、
+　SecurityFilterChainを複数定義する時は、
+　SecurityMatcher()を使用してどのエンドポイントの時に
+　使われるSecurityFilterChainなのかを指定する必要がある。
+
+　監査機能のサンプルコードが動かない。
+　サンプルコードに書いてあるやり方ではStringからUserへのキャストはできないらしい。
+　自分でキャストする処理を実装する必要がある。
+　というか、勘違いしていたがCreatedBy,LastModifiedByに指定するのは
+　認証されたユーザを表す、つまりSpringSecurityでいうところのUserクラスなので
+　AdministratorではなくUserでいいのでは？
+
+　Formクラスもレコードでいいのでは？ユーザの入力をサーバ側で
+　書き換えられる必要などないはずなので、できそうなら変更する
+
 ======================================================================
 
 　R2はプレフィックスで階層を表現できるため、商品のジャンルごとに

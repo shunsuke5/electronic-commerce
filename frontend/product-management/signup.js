@@ -1,8 +1,9 @@
-import { BASE_URL } from "./constant";
+import { BASE_URL } from "./constant.js";
 
 const button = document.getElementById("submit-button");
 
 button.addEventListener("click", async () => {
+    console.log("button pushed")
     const form = document.getElementById("admin-form");
     const formData = new FormData(form);
 
@@ -13,7 +14,7 @@ button.addEventListener("click", async () => {
         });
 
         if (response.ok) {
-            window.location.href = "login.html";
+            console.log("送信成功");
         } else if (response.status === 401) {
             alert("認証失敗");
         } else {

@@ -19,6 +19,7 @@ public class AdministratorController {
 
     @PostMapping("/create")
     public ResponseEntity<AdminResponseDto> createAdmin(@ModelAttribute AdminCreateForm form) {
+        System.out.println("controller-create");
         return ResponseEntity.ok(this.service.create(form));
     }
 }

@@ -1,4 +1,4 @@
-import { BASE_URL } from "./constant";
+import { BASE_URL } from "./constant.js";
 
 const button = document.getElementById("submit-button");
 
@@ -7,7 +7,7 @@ button.addEventListener("click", async () => {
     const formData = new FormData(form);
 
     try {
-        const response = await fetch(BASE_URL + "/admin/token", {
+        const response = await fetch(BASE_URL + "/token/admin", {
             method: "POST",
             body: formData,
         });
