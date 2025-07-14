@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.userdetails.User;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -14,9 +15,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public abstract class UserAuditEntity extends BaseEntity {
     @CreatedBy
     @Column(name = "created_by", nullable = false)
-    private Administrator creator;
+    private User creator;
 
     @LastModifiedBy
     @Column(name = "updated_by", nullable = false)
-    private Administrator updater;
+    private User updater;
 }
