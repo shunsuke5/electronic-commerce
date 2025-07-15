@@ -31,6 +31,7 @@ public class CookieAuthenticationFilter extends OncePerRequestFilter {
                     .findFirst()
                     .ifPresentOrElse(cookie -> {
                         String token = cookie.getValue();
+                        System.out.println(token);
 
                         if (jwtUtils.validateToken(token)) {
                             Authentication auth = jwtUtils.getAuthentication(token);

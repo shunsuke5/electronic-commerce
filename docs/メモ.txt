@@ -56,7 +56,55 @@ https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch#including_cr
 　setAllowedHeaders()はCORSリクエストを許可するヘッダ情報を指定する？
 https://ti-tomo-knowledge.hatenablog.com/entry/2019/12/15/200327
 
-Cookie認証を通過できるように実装するところから
+「クッキーの SameSite 属性が Strict または Lax に設定されている場合、
+　credentials が include に設定されていても、
+　クッキーはサイトをまたいで送信されないことに注意してください。」
+https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch#including_credentials
+
+　SameSiteのNoneの説明文
+　「ブラウザーがクロスサイトと同一サイトの両方のリクエストでクッキーを送信することを意味します。
+　この値を設定する際には、 Secure 属性も設定する必要があります。
+　SameSite=None; Secure のようにします。 Secure 属性がないと、次のエラーが記録されます。」
+　「メモ: Secure のクッキーは、 HTTPS プロトコルで暗号化されたリクエストでのみサーバーに送られます。
+　なお、安全でないサイト (http:) では、 Secure ディレクティブでクッキーを設定することができないため、
+　SameSite=None を使用することができません。」
+
+　異なるオリジン間でCookieをやり取りしたい場合、SameSiteをNoneにする
+　SameSiteをNoneにする場合、Secure属性を設定しなければならない
+　Secure属性を設定する場合、https同士のオリジン間による通信しか行えない。
+　ということは、SpringBootもLive Serverもhttpsで行わないと
+　Cookieのやり取りができないということ？
+　とりあえず、両方ともhttpsに設定する方法を調べて確かめてみる
+
+　SpringBootでhttps設定する方法と、opensslでECDSAを用いた証明書作成の参考
+https://job-info.hateblo.jp/entry/2024/07/03/233602
+https://christina04.hatenablog.com/entry/openssl-command
+　Live Serverをhttpsにする方法の参考
+https://mitikusa-engineer.com/other/visual-studio-code/vsc-live-server-https/
+　両方ともhttpsにすることで、無事フロントからSpringBootに
+　Cookieを送信できるようになった。
+
+　Cookieは送信できるようになったが、JWTの検証に失敗してしまう。
+　「Cannot verify JWS signature: unable to locate signature verification
+　key for JWS with header: {alg=HS256}」のエラーが出る。
+https://github.com/jwtk/jjwt/discussions/928
+https://stackoverflow.com/questions/78836490/validate-jwt-java17-spring-security-jwt0-12-6
+　verifyWith()に変更しても、同じエラーが出る。
+　変わったのは、decryptWith()の時は赤字で該当エラーのみコンソールに表示されたが、
+　verifyWith()にしたら白文字のスタックトレース形式で表示された。
+
+　Sysoutで生成時と検証時のトークンを出力したが、
+　トークン文字列の内容は完全に一致している。
+　何がダメなのか？1つの秘密鍵で検証しようとしているのがダメなのか？
+　それならなぜ引数に秘密鍵を受け取れるverifyWith()メソッドがあるのか？
+　とりあえず公開鍵を作ってそれを使う形で検証してみるのがよいか？
+
+　「This also implies that this key MUST be a valid key for
+　the signature algorithm (alg header) used for the JWS.
+　If there is any chance that the parser will also encounter JWEs,
+　or JWSs that need different signature verification keys
+　based on the JWS being parsed, it is strongly recommended to configure
+　your own keyLocator instead of calling this method.」
 
 ======================================================================
 

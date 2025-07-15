@@ -6,6 +6,7 @@ button.addEventListener("click", async () => {
     try {
         const response = await fetch(BASE_URL + "/auth", {
             method: "GET",
+            credentials: "include"
         });
 
         if (response.ok) {
