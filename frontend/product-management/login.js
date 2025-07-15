@@ -10,11 +10,11 @@ button.addEventListener("click", async () => {
         const response = await fetch(BASE_URL + "/token/admin", {
             method: "POST",
             body: formData,
+            credentials: "include"
         });
 
         if (response.ok) {
-            console.log(response);
-            // window.location.href = "top.html";
+            window.location.href = "top.html";
         } else if (response.status === 401) {
             alert("認証失敗");
         } else {

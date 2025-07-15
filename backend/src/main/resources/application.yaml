@@ -16,6 +16,13 @@ spring:
     multipart:
       max-file-size: 2MB
 
+server:
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: ${KEY_STORE_PASSWORD}
+    key-store-type: PKCS12
+    key-alias: myalias
+
 r2:
   access-key: ${R2_ACCESS_KEY}
   secret-key: ${R2_SECRET_KEY}

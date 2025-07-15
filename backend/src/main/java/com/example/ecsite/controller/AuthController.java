@@ -42,14 +42,15 @@ public class AuthController {
             }
 
             String token = jwtUtils.generateToken(admin.getName(), admin.getId());
+            System.out.println(token);
             Cookie cookie = new Cookie("JWT_TOKEN", token);
 
             cookie.setHttpOnly(true);
-            cookie.setSecure(false);
+            cookie.setSecure(true);
             cookie.setPath("/");
             cookie.setMaxAge(60);
+            cookie.setAttribute("SameSite", "None");
             response.addCookie(cookie);
-            System.out.println(cookie);
 
             return ResponseEntity.ok(Map.of("message", "ログイン成功"));
         } catch (HttpClientErrorException e) {

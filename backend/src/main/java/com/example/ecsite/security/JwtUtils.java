@@ -42,7 +42,7 @@ public class JwtUtils {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().decryptWith(SECRET_KEY).build().parseSignedClaims(token);
+            Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             System.err.println("Invalid JWT token: " + e.getMessage());
