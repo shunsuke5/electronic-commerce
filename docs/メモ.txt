@@ -1,121 +1,49 @@
 メモ
 
-　JWTトークン作成の流れ
-1.ヘッダとペイロードを定義する
-2.ヘッダとペイロードをBASE64エンコードし.でつなげる
-3.エンコードされたヘッダとペイロードを指定したアルゴリズムと秘密鍵で署名する
-4.署名をBASE64エンコードする
-5.署名を.でつなげる
+　認可処理を実装するところから
+　ROLE_ADMINを与えられたユーザしか商品管理システムは操作できないようにしたい。
 
-　JWTトークン検証の流れ
-1.HttpRequest.getCookie()でクッキーを取得
-2.クッキーにJWT_TOKENが含まれているか確認、なければ例外
-3.JWTトークンをデコードする
-4.クレームのsubからユーザ名、scopeからロールを取得する
-5.
+　管理システムとECサイトのエンドポイント分けをどのようにすればわかりやすいか？
+　admin/**, ecsite/** が一番わかりやすいか？
+　例えば、商品では一覧はどちらの権限も取得できるが、
+　追加、削除、更新についてはadminしか行えないため、
+　ProductController全体のマッピングに/admin とすることはできない。
+　それはCustomerControllerについても同様で、
+　顧客情報の取得は管理システムでもできるが、
+　追加、更新、削除については顧客張本人、つまりcustomerしか行えないため、
+　CustomerController全体のマッピングに/customerとすることはできない。
+　ではどのようにエンドポイントを定義すればよいのか？
+　取得処理は全ロール許可、追加、更新、削除処理は
+　そのEntityに対して権限を持つもののみ、というか顧客情報以外は
+　adminのみ操作できるようにしたい。
 
-　Formクラスもレコードでいいのでは？ユーザの入力をサーバ側で
-　書き換えられる必要などないはずなので、できそうなら変更する
+　ECサイトの商品一覧はどうやって表示させればいいのか？
+　普通にjavascriptで取得、そこでトークンが無いなら認証画面へ
+　遷移する処理を書けばいいか？
+　ECサイトのtop.jsでまず/customer/authに通信し、
+　トークンがあればそのまま商品一覧を表示して、
+　無ければログイン画面に遷移するようなコードを実装する。
 
-　ログインで/token/adminを指定してるはずなのに、
-　Cookieが無いと403エラーが返されてしまう。
-　なぜ/admin/createはCookie認証でない方のSecurityFilterChainをちゃんと指定できたのに、
-　/token/adminではできなくなっているのか？
-　原因は、SecurityMatcher()の説明にあった以下の文章かもしれない。
-　「securityMatcher(String...) を呼び出すと、
-　以前の securityMatcher(String...) (文字列)}}、
-　securityMatcher(RequestMatcher) ()}、
-　securityMatchers(Customizer) (文字列)}、
-　および securityMatchers() (文字列)} の呼び出しがオーバーライドされます」
-　/admin/createが機能して/token/adminが機能しないのは、
-　先にsecurityMatcher("/token/**) を記述してしまっているから、
-　後に記述したsecurityMatcher("/admin/create)によってそれが上書きされてしまい、
-　/admin/createのみが有効となっている？
-　securityMatchers(Customizer) を使用すれば解決できそう。
-　　→ 解決できた。
+　JavaScriptの処理でSpringBootに通信を行うfetch()の大部分は
+　共通の処理なので、constant.jsと同じ階層にcommon.jsを作り
+　そこに共通処理を切り出して利用する形にしたい。
+　signup(),login(),auth()で分ける形にするか？
 
-　Cookieをサーバに送信できていない。
-　/token/adminからのレスポンスには、ちゃんとCookieが含まれている。
-　しかし、開発者ツールのApplication -> Cookiesを確認しても
-　該当のCookieが保存されていない。
-https://developer.mozilla.org/ja/docs/Web/HTTP/Reference/Headers/Set-Cookie
-　JavaScriptのSet-Cookieに以下のようなことが書いてある。
-　「フェッチ API または XMLHttpRequest API のリクエストが CORS を使用する 場合、
-　ブラウザーはリクエストに資格情報がない限り、サーバーのレスポンスにある
-　Set-Cookie ヘッダーを無視します。」
-　これが原因だろうか？CORSを使って通信しているので無視されてしまっているのか？
-　credentialsをincludeにすればよい？includeに設定しても、
-　Samesite属性がStrictまたはLaxの場合はCookieはサイトをまたいで送信されないとのこと。
+　トークン認証ができなくなってしまった。
+　認可が上手くいってないか？
+　　→ 原因は、トークンのscopeを設定するところで先頭にROLE_を
+　　　付与していないことだった。SecurityFilterChain内の
+　　　hasRole()では自動的に先頭にROLE_がつけられるため、
+　　　先頭にROLE_をつけて記述するとエラーが出てしまう。
+　　　自動的にROLE_がつくのはhasRole()だけで起こるものなのに、
+　　　なぜかコード全体で起こると勘違いしてトークン生成で付与するところでも
+　　　先頭のROLE_を削除してしまい、認可の不整合が生じてしまっていた。
 
-　「さらに、この状況ではサーバーは Access-Control-Allow-Origin
-　レスポンスヘッダーでクライアントの元のサーバーを
-　明示的に指定しなければなりません（つまり、* は許可されません）。」
-　これも原因だろうか？
-https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch#including_credentials
+　管理システムの方はログイン後にトップ画面に行きたいが、
+　ECサイトの方は商品一覧をトップ画面にしたい。
+　メソッドの引数に遷移先のファイル名も指定する形にすればよいか？
 
-　setAllowedHeaders()はCORSリクエストを許可するヘッダ情報を指定する？
-https://ti-tomo-knowledge.hatenablog.com/entry/2019/12/15/200327
-
-「クッキーの SameSite 属性が Strict または Lax に設定されている場合、
-　credentials が include に設定されていても、
-　クッキーはサイトをまたいで送信されないことに注意してください。」
-https://developer.mozilla.org/ja/docs/Web/API/Fetch_API/Using_Fetch#including_credentials
-
-　SameSiteのNoneの説明文
-　「ブラウザーがクロスサイトと同一サイトの両方のリクエストでクッキーを送信することを意味します。
-　この値を設定する際には、 Secure 属性も設定する必要があります。
-　SameSite=None; Secure のようにします。 Secure 属性がないと、次のエラーが記録されます。」
-　「メモ: Secure のクッキーは、 HTTPS プロトコルで暗号化されたリクエストでのみサーバーに送られます。
-　なお、安全でないサイト (http:) では、 Secure ディレクティブでクッキーを設定することができないため、
-　SameSite=None を使用することができません。」
-
-　異なるオリジン間でCookieをやり取りしたい場合、SameSiteをNoneにする
-　SameSiteをNoneにする場合、Secure属性を設定しなければならない
-　Secure属性を設定する場合、https同士のオリジン間による通信しか行えない。
-　ということは、SpringBootもLive Serverもhttpsで行わないと
-　Cookieのやり取りができないということ？
-　とりあえず、両方ともhttpsに設定する方法を調べて確かめてみる
-
-　SpringBootでhttps設定する方法と、opensslでECDSAを用いた証明書作成の参考
-https://job-info.hateblo.jp/entry/2024/07/03/233602
-https://christina04.hatenablog.com/entry/openssl-command
-　Live Serverをhttpsにする方法の参考
-https://mitikusa-engineer.com/other/visual-studio-code/vsc-live-server-https/
-　両方ともhttpsにすることで、無事フロントからSpringBootに
-　Cookieを送信できるようになった。
-
-　Cookieは送信できるようになったが、JWTの検証に失敗してしまう。
-　「Cannot verify JWS signature: unable to locate signature verification
-　key for JWS with header: {alg=HS256}」のエラーが出る。
-https://github.com/jwtk/jjwt/discussions/928
-https://stackoverflow.com/questions/78836490/validate-jwt-java17-spring-security-jwt0-12-6
-　verifyWith()に変更しても、同じエラーが出る。
-　変わったのは、decryptWith()の時は赤字で該当エラーのみコンソールに表示されたが、
-　verifyWith()にしたら白文字のスタックトレース形式で表示された。
-
-　Sysoutで生成時と検証時のトークンを出力したが、
-　トークン文字列の内容は完全に一致している。
-　何がダメなのか？1つの秘密鍵で検証しようとしているのがダメなのか？
-　それならなぜ引数に秘密鍵を受け取れるverifyWith()メソッドがあるのか？
-　とりあえず公開鍵を作ってそれを使う形で検証してみるのがよいか？
-
-　「This also implies that this key MUST be a valid key for
-　the signature algorithm (alg header) used for the JWS.
-　If there is any chance that the parser will also encounter JWEs,
-　or JWSs that need different signature verification keys
-　based on the JWS being parsed, it is strongly recommended to configure
-　your own keyLocator instead of calling this method.」
-
-　他にio.jsonwebtokenを使用しているコードを見てみる。
-https://qiita.com/LiPing/items/5b063d45392f15fb457b
-　コードはKotlinだが、signWith()のところで秘密鍵だけではなく、
-　アルゴリズムも指定している。自分のコードでは秘密鍵しか指定していないため、
-　アルゴリズムも指定してみる。
-
-　なんかできた。
-　原因は、getClaimFromToken()内のdecryptWith()をverifyWith()に
-　修正し忘れていたことだった。signWith()の第二引数にアルゴリズムを指定しなくても、
-　decryptWith()をverifyWith()に変更することで解決できた。
+　ユーザ生成の際に、既にユーザ名がある場合はControllerからエラーを返したい。
 
 ======================================================================
 
@@ -126,7 +54,12 @@ https://qiita.com/LiPing/items/5b063d45392f15fb457b
 
 　OIDCでJWTトークンを生成する場合、認証が終わった後に
 　SpringBootとOIDC間でやり取りすることは可能なのか？
-　それができるなら、そこで企業IDをOIDCに送信してトークン内に含められる？
+　それができるなら、そこでscopeなどを設定できる？
+
+　Formクラスもレコードでいいのでは？ユーザの入力をサーバ側で
+　書き換えられる必要などないはずなので、できそうなら変更する
+
+　CSRF設定を適切に行う
 
 　.oauth2ResourceServer( rs -> rs.jwt( jwt -> {})) 内で、
 　jwt.bearerTokenResolver(BearerTokenResolver)で

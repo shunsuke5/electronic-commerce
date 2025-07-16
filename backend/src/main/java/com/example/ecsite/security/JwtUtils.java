@@ -22,12 +22,22 @@ public class JwtUtils {
     private final SecretKey SECRET_KEY = Jwts.SIG.HS256.key().build();
     private final long EXPIRATION_TIME = 86400000;
 
-    public String generateToken(String username, Long id) {
+    public String generateAdminToken(String username, Long id) {
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .claims(Map.of("id", id, "scope","ROLE:ADMIN"))
+                .claims(Map.of("id", id, "scope","ROLE_ADMIN"))
+                .signWith(SECRET_KEY)
+                .compact();
+    }
+
+    public String generateCustomerToken(String username, Long id) {
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .claims(Map.of("id", id, "scope","ROLE_CUSTOMER"))
                 .signWith(SECRET_KEY)
                 .compact();
     }
@@ -44,7 +54,7 @@ public class JwtUtils {
 
     public Authentication getAuthentication(String token) {
         String username = getUsernameFromToken(token);
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ADMIN");
+        GrantedAuthority authority = getRoleFromToken(token);
         User principal = new User(username, "", Collections.singletonList(authority));
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
@@ -55,6 +65,11 @@ public class JwtUtils {
 
     public Long getIdFromToken(String token) {
         return getClaimFromToken(token, claims -> claims.get("id", Long.class));
+    }
+
+    public GrantedAuthority getRoleFromToken(String token) {
+        String role = getClaimFromToken(token, claims -> claims.get("scope", String.class));
+        return new SimpleGrantedAuthority(role);
     }
 
     private <T> T getClaimFromToken(String token, Function<Claims, T> resolver) {
