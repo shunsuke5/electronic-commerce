@@ -32,14 +32,6 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
-    }
-
-    public Long getIdFromToken(String token) {
-        return getClaimFromToken(token, claims -> claims.get("id", Long.class));
-    }
-
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token);
@@ -52,14 +44,22 @@ public class JwtUtils {
 
     public Authentication getAuthentication(String token) {
         String username = getUsernameFromToken(token);
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ADMIN");
         User principal = new User(username, "", Collections.singletonList(authority));
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 
+    public String getUsernameFromToken(String token) {
+        return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    public Long getIdFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("id", Long.class));
+    }
+
     private <T> T getClaimFromToken(String token, Function<Claims, T> resolver) {
         final Claims claims = Jwts.parser()
-                .decryptWith(SECRET_KEY)
+                .verifyWith(SECRET_KEY)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
