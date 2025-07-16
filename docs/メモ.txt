@@ -106,6 +106,17 @@ https://stackoverflow.com/questions/78836490/validate-jwt-java17-spring-security
 　based on the JWS being parsed, it is strongly recommended to configure
 　your own keyLocator instead of calling this method.」
 
+　他にio.jsonwebtokenを使用しているコードを見てみる。
+https://qiita.com/LiPing/items/5b063d45392f15fb457b
+　コードはKotlinだが、signWith()のところで秘密鍵だけではなく、
+　アルゴリズムも指定している。自分のコードでは秘密鍵しか指定していないため、
+　アルゴリズムも指定してみる。
+
+　なんかできた。
+　原因は、getClaimFromToken()内のdecryptWith()をverifyWith()に
+　修正し忘れていたことだった。signWith()の第二引数にアルゴリズムを指定しなくても、
+　decryptWith()をverifyWith()に変更することで解決できた。
+
 ======================================================================
 
 　R2はプレフィックスで階層を表現できるため、商品のジャンルごとに
