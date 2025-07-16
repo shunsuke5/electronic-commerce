@@ -31,7 +31,6 @@ public class CookieAuthenticationFilter extends OncePerRequestFilter {
                     .findFirst()
                     .ifPresentOrElse(cookie -> {
                         String token = cookie.getValue();
-                        System.out.println(token);
 
                         if (jwtUtils.validateToken(token)) {
                             Authentication auth = jwtUtils.getAuthentication(token);
@@ -40,7 +39,7 @@ public class CookieAuthenticationFilter extends OncePerRequestFilter {
                             System.out.println("JWT validation failed.");
                         }
                     },
-                            () -> System.out.println("JWT Token not found in cookkies."));
+                            () -> System.out.println("JWT Token not found in cookies."));
         } else {
             System.out.println("No cookies found in the request.");
         }

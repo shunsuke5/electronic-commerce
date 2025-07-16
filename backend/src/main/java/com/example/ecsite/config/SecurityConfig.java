@@ -30,21 +30,18 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain tokenSecurityFilterChain (
             HttpSecurity http,
-            UrlBasedCorsConfigurationSource source,
-            JwtUtils jwtUtils) throws Exception {
+            UrlBasedCorsConfigurationSource source) throws Exception {
         http
                 .securityMatchers(matchers -> matchers
-                        .requestMatchers("/token/**", "/admin/create")
+                        .requestMatchers("/token/**", "/admin/create", "/customer/create")
                 )
-//                .securityMatcher("/token/**")
-//                .securityMatcher("/admin/create")
                 .cors(cors -> cors.configurationSource(source))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/token/**").permitAll()
                         .requestMatchers("/admin/create").permitAll()
-//                        .requestMatchers("/customer/create").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/customer/create").permitAll()
+                        // .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable());
 
@@ -52,19 +49,42 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain (
+    @Order(2)
+    public SecurityFilterChain adminSecurityFilterChain (
             HttpSecurity http,
             UrlBasedCorsConfigurationSource source,
             JwtUtils jwtUtils,
             @Qualifier("admin") AuthenticationManager authManager) throws Exception {
         http
+                .securityMatchers(matchers -> matchers
+                        .requestMatchers("/admin/**")
+                )
                 .cors(cors -> cors.configurationSource(source))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/token/**").permitAll()
-                        .requestMatchers("/admin/create").permitAll()
-//                        .requestMatchers("/customer/create").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().hasRole("ADMIN")
+                )
+                .addFilterBefore(new CookieAuthenticationFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class)
+                .formLogin(form -> form.disable())
+                .authenticationManager(authManager);
+
+        return http.build();
+    }
+
+    @Bean
+    public SecurityFilterChain cusotmerSecurityFilterChain (
+            HttpSecurity http,
+            UrlBasedCorsConfigurationSource source,
+            JwtUtils jwtUtils,
+            @Qualifier("customer") AuthenticationManager authManager) throws Exception {
+        http
+                .securityMatchers(matchers -> matchers
+                        .requestMatchers("/customer/**")
+                )
+                .cors(cors -> cors.configurationSource(source))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().hasRole("CUSTOMER")
                 )
                 .addFilterBefore(new CookieAuthenticationFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
