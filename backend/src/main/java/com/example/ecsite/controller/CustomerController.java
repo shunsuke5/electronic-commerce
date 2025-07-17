@@ -19,7 +19,7 @@ public class CustomerController {
 
     @PostMapping("/create")
     public ResponseEntity<CustomerResponseDto> createCustomer(@ModelAttribute CustomerCreateForm form) {
-        System.out.println("controller-create");
+        System.out.println("customer-create");
         return ResponseEntity.ok(this.service.create(form));
     }
 }

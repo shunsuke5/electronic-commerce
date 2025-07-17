@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.User;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-public abstract class UserAuditEntity extends BaseEntity {
+public abstract class BaseAuditorEntity extends BaseEntity {
     @CreatedBy
     @Column(name = "created_by", nullable = false)
     private User creator;

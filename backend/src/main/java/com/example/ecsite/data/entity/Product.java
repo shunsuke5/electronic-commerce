@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Product extends UserAuditEntity {
+public class Product extends BaseAuditorEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;

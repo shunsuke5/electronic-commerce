@@ -43,7 +43,43 @@
 　ECサイトの方は商品一覧をトップ画面にしたい。
 　メソッドの引数に遷移先のファイル名も指定する形にすればよいか？
 
-　ユーザ生成の際に、既にユーザ名がある場合はControllerからエラーを返したい。
+　もしかして、ROLE_CUSTOMERが原因？
+　SpringSecurityはROLE_USER,ROLE_ADMINとか用意しているものだけ
+　読み込んでくれるとか？
+　しかし、SpringSecurityのADMIN,USERのような区分けは
+　ADMINはUSER権限も持つような設定であるため、今回実現したいこととは違う。
+　なら、別にrole:admin, role:customer のように自分で定義してしまった方が
+　紛らわしくなくてよいのではないか？
+
+　hasRole()だと先頭にROLE_が自動的に付与され、
+　hasAuthority()だと文字列をそのまま受け取ってくれるとのこと。
+https://qiita.com/yukiyoshimura/items/50f1164983cda2c27bea
+　role,authorityの違いは以下のサイトが分かりやすかった。
+　今回に適しているのはauthorityのため、authority:xxx の形で
+　権限を設定することにした。
+https://qiita.com/ichi_zamurai/items/6f955edc259556c3e7d2
+
+　/customer/authは出力されているので、認証自体は通っている。
+　isExpireToken()の判定が上手く機能していない。
+　　→ 原因は、isExpireToken()の前にawaitを記述していないことだった。
+　　　そのため、戻り値が完全なものでなくなってしまっており、booleanが
+　　　返っていなかった。await isExpireToken() とすることで
+　　　想定通りの値が返るようになり解決。
+
+　管理者、顧客はユーザ名ではなくメールアドレスで管理すべきではないだろうか？
+　フロントの入力、CreateForm、Dtoなどにemailを追加する。
+　登録、ログインはメールアドレスとパスワードのみとして、
+　ユーザ名はログイン後に設定する形にした方が良いだろうか？
+　しかし現在の設計ではBaseEntityでnameがnullable=falseになってしまっているため、
+　登録時にユーザ名も入力させる形とした。
+
+　isExpireToken()とauth()について、どのような実装がいいだろうか？
+　現在のisExpireToken()の実装では、404,500エラーなどが起きた場合にも
+　何のアラートも表示せずにログイン画面に遷移してしまう。
+　であればauth()のようにcatch文でアラートを表示したいが、
+　そうすると呼び出し元でどのように判定を行うのか？
+　isValid()として、if(await isValid()) とすれば、
+　elseの場合は特に何もしなくてもエラーなので、それでよいのでは？
 
 ======================================================================
 
@@ -59,7 +95,17 @@
 　Formクラスもレコードでいいのでは？ユーザの入力をサーバ側で
 　書き換えられる必要などないはずなので、できそうなら変更する
 
-　CSRF設定を適切に行う
+　画面中、常にヘッダにユーザ名を表示したい
+
+　ユーザ生成の際に、既にユーザ名がある場合はControllerからエラーを返したい。
+　Spring Data JPAではユーザ名が重複している場合、どのような挙動をするのか？
+　というか現段階ではユーザ名カラムをuniqueにしているわけではないので、
+　そのまま登録されてしまうのではないか？
+
+　CSRF設定を適切に行う。
+
+　ユーザ、商品登録など入力に対してフロント、バック、データベースで
+　適切にバリデーションを行う。
 
 　.oauth2ResourceServer( rs -> rs.jwt( jwt -> {})) 内で、
 　jwt.bearerTokenResolver(BearerTokenResolver)で

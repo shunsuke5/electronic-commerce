@@ -7,14 +7,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Entity
 @Table(name = "administrators")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Administrator extends BaseEntity implements Serializable {
+public class Administrator extends BaseEntity {
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(nullable = false)
     private String password;
 }

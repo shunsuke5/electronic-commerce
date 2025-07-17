@@ -30,7 +30,6 @@ public class JpaConfig {
                     .filter(Authentication::isAuthenticated)
                     .map(Authentication::getPrincipal);
 
-            // TODO: String -> Userの変換処理を自分で実装する
             User user = new User(obj.toString(), "", Collections.emptyList());
             return Optional.of(user);
         }

@@ -38,10 +38,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(source))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/token/**").permitAll()
-                        .requestMatchers("/admin/create").permitAll()
-                        .requestMatchers("/customer/create").permitAll()
-                        // .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable());
 
@@ -62,7 +59,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(source))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().hasRole("ADMIN")
+                        .anyRequest().hasAuthority("authority:admin")
                 )
                 .addFilterBefore(new CookieAuthenticationFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
@@ -84,7 +81,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(source))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().hasRole("CUSTOMER")
+                        .anyRequest().hasAuthority("authority:customer")
                 )
                 .addFilterBefore(new CookieAuthenticationFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())

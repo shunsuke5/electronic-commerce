@@ -27,7 +27,7 @@ public class JwtUtils {
                 .subject(username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .claims(Map.of("id", id, "scope","ROLE_ADMIN"))
+                .claims(Map.of("id", id, "scope","authority:admin"))
                 .signWith(SECRET_KEY)
                 .compact();
     }
@@ -37,7 +37,7 @@ public class JwtUtils {
                 .subject(username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .claims(Map.of("id", id, "scope","ROLE_CUSTOMER"))
+                .claims(Map.of("id", id, "scope","authority:customer"))
                 .signWith(SECRET_KEY)
                 .compact();
     }

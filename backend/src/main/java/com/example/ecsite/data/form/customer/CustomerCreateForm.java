@@ -9,5 +9,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CustomerCreateForm {
     private String name;
+    private String email;
     private String password;
 }
