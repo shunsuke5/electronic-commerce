@@ -1,10 +1,7 @@
-import { isExpireToken } from "../../common.js";
+import { isExpireToken, isValidToken } from "../../common.js";
 
-// トークンの確認
-if (isExpireToken("/customer/auth")) {
-    console.log("expire");
-    window.location.href = "login.html"
-} else {
-    // 商品一覧を取得して表示する
-    console.log("else");
+const isTokenValid = isValidToken("/customer/auth");
+if (await isTokenValid) {
+    console.log("商品表示");
+    // 商品一覧を表示する
 }

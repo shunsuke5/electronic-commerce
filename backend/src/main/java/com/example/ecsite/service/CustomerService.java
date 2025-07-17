@@ -18,9 +18,9 @@ public class CustomerService {
     private final PasswordEncoder encoder;
 
     public CustomerResponseDto create(CustomerCreateForm form) {
-        Customer admin = this.mapper.toEntity(form);
-        admin.setPassword(encoder.encode(admin.getPassword()));
-        Customer result = this.repository.save(admin);
+        Customer customer = this.mapper.toEntity(form);
+        customer.setPassword(encoder.encode(customer.getPassword()));
+        Customer result = this.repository.save(customer);
         return this.mapper.toResponseDto(result);
     }
 }

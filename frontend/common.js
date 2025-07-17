@@ -43,13 +43,23 @@ export async function login(form, path, destPage) {
     }
 }
 
-export async function isExpireToken(path) {
-    const response = await fetch(BASE_URL + path, {
-        method: "GET",
-        credentials: "include"
-    });
+export async function isValidToken(path) {
+    try {
+        const response = await fetch(BASE_URL + path, {
+            method: "GET",
+            credentials: "include"
+        });
 
-    return !response.ok;
+        if (response.ok) {
+            return true;
+        } else if (response.status === 403) {
+            window.location.href = "login.html";
+        } else {
+            alert("エラー:" + response.statusText);
+        }
+    } catch (error) {
+        console.error("通信エラー:", error);
+    }
 }
 
 export async function auth(path, destPage) {

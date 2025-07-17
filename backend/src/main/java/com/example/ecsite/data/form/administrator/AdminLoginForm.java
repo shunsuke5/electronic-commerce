@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class AdminLoginForm {
-    private String name;
+    private String email;
     private String password;
 }

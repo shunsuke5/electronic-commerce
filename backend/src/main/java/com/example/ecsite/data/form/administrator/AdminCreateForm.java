@@ -9,5 +9,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AdminCreateForm {
     private String name;
+    private String email;
     private String password;
 }

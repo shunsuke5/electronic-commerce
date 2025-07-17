@@ -31,18 +31,18 @@ public class AuthController {
 
     @GetMapping("/admin/auth")
     public void adminAuth() {
-        System.out.println("/admin/auth");
+        // トークン確認用エンドポイント
     }
 
     @GetMapping("/customer/auth")
     public void customerAuth() {
-        System.out.println("/customer/auth");
+        // トークン確認用エンドポイント
     }
 
     @PostMapping("/token/admin")
     public ResponseEntity<?> admin(@ModelAttribute AdminLoginForm form, HttpServletResponse response) {
         try {
-            Administrator admin = adminRepository.findByName(form.getName())
+            Administrator admin = adminRepository.findByEmail(form.getEmail())
                     .orElseThrow(() -> new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "401エラー"));
 
             if (!encoder.matches(form.getPassword(), admin.getPassword())) {
@@ -68,7 +68,7 @@ public class AuthController {
     @PostMapping("/token/customer")
     public ResponseEntity<?> customer(@ModelAttribute AdminLoginForm form, HttpServletResponse response) {
         try {
-            Customer customer = customerRepository.findByName(form.getName())
+            Customer customer = customerRepository.findByEmail(form.getEmail())
                     .orElseThrow(() -> new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "401エラー"));
 
             if (!encoder.matches(form.getPassword(), customer.getPassword())) {
